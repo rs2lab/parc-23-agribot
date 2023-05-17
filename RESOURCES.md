@@ -8,3 +8,5 @@
 - [Catkin Tutorials](http://wiki.ros.org/catkin/Tutorials)
 - [Some other resources](https://parc-robotics.github.io/documentation-2023/resources-and-support/additional-resources/)
 - [Image Segmentation Techniques in OpenCV Python](https://machinelearningknowledge.ai/image-segmentation-in-python-opencv/)
+- [Working With ROS and OpenCV in ROS Noetic](https://automaticaddison.com/working-with-ros-and-opencv-in-ros-noetic/): Blog article on using opencv in ros noetic.
+- [OpenCV Tutorial](https://docs.opencv.org/2.4/doc/tutorials/tutorials.html): A set of basic OpenCV tutorials.
