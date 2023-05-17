@@ -10,3 +10,4 @@
 - [Image Segmentation Techniques in OpenCV Python](https://machinelearningknowledge.ai/image-segmentation-in-python-opencv/): Blog article with some example of opencv segmentation techniques.
 - [Working With ROS and OpenCV in ROS Noetic](https://automaticaddison.com/working-with-ros-and-opencv-in-ros-noetic/): Blog article on using opencv in ros noetic.
 - [OpenCV Tutorial](https://docs.opencv.org/2.4/doc/tutorials/tutorials.html): A set of basic OpenCV tutorials.
+- [The Ultimate Guide to Real-Time Lane Detection Using OpenCV](https://automaticaddison.com/the-ultimate-guide-to-real-time-lane-detection-using-opencv/): This is a blog post with a tutorial with  the entire process, step by step, of how to detect lanes on a road in real time using the OpenCV computer vision library and Python.
