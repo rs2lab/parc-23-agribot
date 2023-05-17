@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import rospy
+import cv2
+
 from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 
 
 def callback(data: Image):
@@ -12,12 +15,16 @@ def callback(data: Image):
     rosmsg info sensor_msgs/Image
     ```
     """
-    rospy.loginfo(data.data)
+    br = CvBridge()
+    rospy.loginfo('Receiving video frame')
+    frame = br.imgmsg_to_cv2(data)
+    cv2.imshow('camera', frame)
+    cv2.waitKey(1)
 
 
 if __name__ == '__main__':
     rospy.init_node('test_camera_listener')
     rospy.Subscriber('/camera/image_raw', Image, callback)
     rospy.spin()
-
+    cv2.destroyAllWindows()
 
