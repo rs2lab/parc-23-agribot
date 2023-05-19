@@ -32,19 +32,19 @@ def detect_segmented_color_profile(image, lower_bound, upper_bound):
     return cv2.bitwise_and(segmented_image, segmented_image, mask=color_mask)
 
 
-def detect_plants(image):
+def detect_plants(image, lower_adjust = -10, upper_adjust = 5):
     return detect_segmented_color_profile(
         image=image,
-        lower_bound=np.array([90, 120, 40]),
-        upper_bound=np.array([100, 220, 70])
+        lower_bound=np.array([90, 120, 40]) + lower_adjust,
+        upper_bound=np.array([100, 220, 70]) + upper_adjust,
     )
 
 
-def detect_ground(image):
+def detect_ground(image, lower_adjust = -4, upper_adjust = 10):
     return detect_segmented_color_profile(
         image=image,
-        lower_bound=np.array([105, 90, 55]),
-        upper_bound=np.array([160, 140, 120])
+        lower_bound=np.array([105, 90, 55]) + lower_adjust,
+        upper_bound=np.array([165, 140, 120]) + upper_adjust,
     )
 
 
