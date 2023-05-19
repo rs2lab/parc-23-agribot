@@ -29,7 +29,7 @@ def detect_segmented_color_profile(image, lower_bound, upper_bound):
     image_masked = mask_image(cv2.medianBlur(image, 3), MASK)
     segmented_image = segment_image(image_masked)
     color_mask = cv2.inRange(segmented_image, lower_bound, upper_bound)
-    return cv2.bitwise_and(segmented_image, segment_image, color_mask)
+    return cv2.bitwise_and(segmented_image, segmented_image, mask=color_mask)
 
 
 def detect_plants(image):
@@ -43,7 +43,7 @@ def detect_plants(image):
 def detect_ground(image):
     return detect_segmented_color_profile(
         image=image,
-        lower_bound=np.array([105, 90, 55])
+        lower_bound=np.array([105, 90, 55]),
         upper_bound=np.array([160, 140, 120])
     )
 
@@ -60,7 +60,9 @@ def callback(data: Image):
     br = CvBridge()
     rospy.loginfo('Receiving video frame')
     frame = br.imgmsg_to_cv2(data)
-    cv2.imshow('camera', detect_ground(frame))
+    dimg = detect_ground(frame)
+    cv2.imwrite('t.png', dimg)
+    cv2.imshow('camera', dimg)
     cv2.waitKey(1)
 
 
