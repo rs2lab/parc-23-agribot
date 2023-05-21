@@ -5,6 +5,12 @@ from geometry_msgs.msg import Twist
 from robot_sensor import UcvSensorType
 
 
+"""NOTE: be aware that we might have to face a 'race condition' (a concurrency problem)
+ if the state of the robot control object is accessed by the callbacks when the
+ sensors' states update, because two or more callbacks can be called almost simultaneously.
+"""
+
+
 class UcvRobotControl:
     def __init__(self, robot_sensor, default_publishing_rate = 10):
         self._sensor = robot_sensor
