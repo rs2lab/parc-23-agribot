@@ -26,12 +26,6 @@ class UcvRobotSensor:
         self._gps_state = None
         self._laser_scan = None
 
-        rospy.Subscriber('/left_camera/image_raw', Image, self._left_camera_state_update_handler)
-        rospy.Subscriber('/right_camera/image_raw', Image, self._right_camera_state_update_handler)
-        rospy.Subscriber('/camera/image_raw', Image, self._front_camera_state_update_handler)
-        rospy.Subscriber('/gps/fix', NavSatFix, self._gps_state_update_handler)
-        rospy.Subscriber('/scan', LaserScan, self._laser_scan_state_update_handler)
-
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
             UcvSensorType.CAM_RIGHT: [],
@@ -39,6 +33,12 @@ class UcvRobotSensor:
             UcvSensorType.GPS: [],
             UcvSensorType.LASER_SCAN: [],
         }
+
+        rospy.Subscriber('/left_camera/image_raw', Image, self._left_camera_state_update_handler)
+        rospy.Subscriber('/right_camera/image_raw', Image, self._right_camera_state_update_handler)
+        rospy.Subscriber('/camera/image_raw', Image, self._front_camera_state_update_handler)
+        rospy.Subscriber('/gps/fix', NavSatFix, self._gps_state_update_handler)
+        rospy.Subscriber('/scan', LaserScan, self._laser_scan_state_update_handler)
 
     def register_state_update_callback(self, sensor_type, callback):
         if sensor_type in self._state_update_callback_registry:
