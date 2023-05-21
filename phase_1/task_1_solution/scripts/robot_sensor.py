@@ -61,26 +61,101 @@ class UcvRobotSensor:
 
     @property
     def left_camera_state(self):
+        """Returns `sensor_msgs.msg.Image`
+
+        Attributes:
+            - header.seq: uint32
+            - header.stamp: time
+            - header.frame_id: string
+            - height: uint32
+            - width: uint32
+            - encoding: string
+            - is_bigendian: uint8
+            - step: uint32
+            - data: uint8[]
+        """
         return self._left_camera_state
 
     @property
     def right_camera_state(self):
+        """Returns `sensor_msgs.msg.Image`
+
+        Attributes:
+            - header.seq: uint32
+            - header.stamp: time
+            - header.frame_id: string
+            - height: uint32
+            - width: uint32
+            - encoding: string
+            - is_bigendian: uint8
+            - step: uint32
+            - data: uint8[]
+        """
         return self._right_camera_state
 
     @property
     def front_camera_state(self):
+        """Returns `sensor_msgs.msg.Image`
+
+        Attributes:
+            - header.seq: uint32
+            - header.stamp: time
+            - header.frame_id: string
+            - height: uint32
+            - width: uint32
+            - encoding: string
+            - is_bigendian: uint8
+            - step: uint32
+            - data: uint8[]
+        """
         return self._front_camera_state
 
     @property
     def gps_state(self):
+        """Returns `sensor_msgs.msg.NavSatFix`
+
+        Attributes:
+            - header.seq: uint32
+            - header.stamp: time
+            - header.frame_id: string
+            - latitude: float64
+            - longitude: float64
+            - altitude: float64
+        """
         return self._gps_state
 
     @property
     def laser_scan_state(self):
+        """Returns `sensor_msgs.msg.LaserScan`
+
+        Attributes:
+            - header.seq: uint32
+            - header.stamp: time
+            - header.frame_id: string
+            - angle_min: float32
+            - angle_max: float32
+            - angle_increment: float32
+            - time_increment: float32
+            - scan_time: float32
+            - range_min: float32
+            - range_max: float32
+            - ranges: float32[]
+            - intensities: float32[]
+        """
         return self._laser_scan_state
 
     @property
     def cmd_vel_state(self):
+        """Returns `geometry_msgs.msg.Twist`
+
+        Attributes:
+            - linear.x: float64
+            - linear.y: float64
+            - linear.y: float64
+            - angular.x: float64
+            - angular.y: float64
+            - angular.z: float64
+        """
         return self._cmd_vel_state
 
     def _left_camera_state_update_handler(self, data):
