@@ -23,7 +23,7 @@ class UcvRobotSensor:
         self._left_camera_state = None
         self._right_camera_state = None
         self._front_camera_state = None
-        self.laser_scan = None
+        self._gps_state = None
         self._laser_scan = None
 
         rospy.Subscriber('/left_camera/image_raw', Image, self._left_camera_state_update_handler)
