@@ -40,19 +40,26 @@ class UcvRobotControl:
 
     def on_front_camera_state_update(self, data):
         rospy.loginfo('Robot Control: front camera state update action')
+        # TODO: react to state update?
 
     def on_left_camera_state_update(self, data):
         rospy.loginfo('Robot Control: left camera state update action')
+        # TODO: react to state update?
 
     def on_right_camera_state_update(self, data):
         rospy.loginfo('Robot Control: right camera state update action')
+        # TODO: react to state update?
 
     def on_gps_state_update(self, data):
         rospy.loginfo('Robot Control: gps state update action')
+        # TODO: react to state update?
 
     def on_laser_scan_state_update(Self, data):
         rospy.loginfo('Robot Control: laser scan state update action')
+        # TODO: react to state update?
 
     def on_cmd_vel_state_update(self, data):
         # NOTE: Be careful here since this is updated mainly by us
         rospy.loginfo('Robot Control: cmd vel state update action')
+        # TODO: react to state update?
+
