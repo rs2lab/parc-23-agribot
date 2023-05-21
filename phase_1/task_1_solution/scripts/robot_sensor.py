@@ -1,14 +1,18 @@
 import rospy
 import enum
 
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import (
+    Image,
+    NavSatFix,
+    LaserScan
+)
 
 
 class UcvSensorType(enum.Enum):
     CAM_LEFT = 'left_camera'
     CAM_RIGHT = 'right_camera'
     CAM_FRONT = 'front_camera'
+    LASER_SCAN = 'laser_scanner'
     GPS = 'gps'
 
 
@@ -19,19 +23,21 @@ class UcvRobotSensor:
         self._left_camera_state = None
         self._right_camera_state = None
         self._front_camera_state = None
-        self._gps_state = None
-        # self._ydlidar_state = None
+        self.laser_scan = None
+        self._laser_scan = None
 
         rospy.Subscriber('/left_camera/image_raw', Image, self._left_camera_state_update_handler)
         rospy.Subscriber('/right_camera/image_raw', Image, self._right_camera_state_update_handler)
         rospy.Subscriber('/camera/image_raw', Image, self._front_camera_state_update_handler)
         rospy.Subscriber('/gps/fix', NavSatFix, self._gps_state_update_handler)
+        rospy.Subscriber('/scan', LaserScan, self._laser_scan_state_update_handler)
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
             UcvSensorType.CAM_RIGHT: [],
             UcvSensorType.CAM_FRONT: [],
             UcvSensorType.GPS: [],
+            UcvSensorType.LASER_SCAN: [],
         }
 
     def register_state_update_callback(self, sensor_type, callback):
@@ -64,9 +70,9 @@ class UcvRobotSensor:
     def gps_state(self):
         return self._gps_state
 
-    # @property
-    # def ydlidar_state(self):
-    #     return self._ydlidar_state
+    @property
+    def laser_scan(self):
+        return self._laser_scan
 
     def _left_camera_state_update_handler(self, data):
         self._left_camera_state = data
@@ -83,3 +89,7 @@ class UcvRobotSensor:
     def _gps_state_update_handler(self, data):
         self._gps_state = data
         self._trigger_callbacks(UcvSensorType.GPS, data)
+
+    def _laser_scan_state_update_handler(self, data):
+        self._laser_scan = data
+        self._trigger_callbacks(UcvSensorType.LASER_SCAN, data)

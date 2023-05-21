@@ -26,6 +26,10 @@ class UcvRobotControl:
             sensor_type = UcvSensorType.GPS,
             callback = self.on_gps_state_update,
         )
+        self._sensor.register_state_update_callback(
+            sensor_type = UcvSensorType.LASER_SCAN,
+            callback = self.on_laser_scan_state_update,
+        )
 
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size = 10)
 
@@ -41,3 +45,5 @@ class UcvRobotControl:
     def on_gps_state_update(self, data):
         rospy.loginfo('Robot Control: gps state update action')
 
+    def on_laser_scan_state_update(Self, data):
+        rospy.loginfo('Robot Control: laser scan state update action')
