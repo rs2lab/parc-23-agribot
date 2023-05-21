@@ -53,3 +53,6 @@ class UcvRobotControl:
 
     def on_laser_scan_state_update(Self, data):
         rospy.loginfo('Robot Control: laser scan state update action')
+
+    def on_cmd_vel_state_update(self, data):
+        rospy.loginfo('Robot Control: cmd vel state update action')
