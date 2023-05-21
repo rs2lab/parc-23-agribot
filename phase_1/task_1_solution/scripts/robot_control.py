@@ -5,10 +5,9 @@ from geometry_msgs.msg import Twist
 from robot_sensor import UcvSensorType
 
 
-"""NOTE: be aware that we might have to face a 'race condition' (a concurrency problem)
- if the state of the robot control object is accessed by the callbacks when the
- sensors' states update, because two or more callbacks can be called almost simultaneously.
-"""
+# NOTE: be aware that we might have to face a 'race condition' (a concurrency problem)
+#   if the state of the robot control object is accessed by the callbacks when the
+#   sensors' states update, because two or more callbacks can be called almost simultaneously.
 
 
 class UcvRobotControl:
@@ -55,4 +54,5 @@ class UcvRobotControl:
         rospy.loginfo('Robot Control: laser scan state update action')
 
     def on_cmd_vel_state_update(self, data):
+        # NOTE: Be careful here since this is updated mainly by us
         rospy.loginfo('Robot Control: cmd vel state update action')
