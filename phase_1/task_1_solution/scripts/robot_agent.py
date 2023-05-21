@@ -14,6 +14,6 @@ class UcvRobotAgent:
 
     def run(self):
         rospy.spin()
-        rospy.loginfo(f'Finishing Task 1 Solver Agent {self._node_id!r}')
+        rospy.loginfo(f'Terminating Task 1 Solver Agent {self._node_id!r}')
 
 
