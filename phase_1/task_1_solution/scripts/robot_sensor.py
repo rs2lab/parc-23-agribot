@@ -43,6 +43,7 @@ class UcvRobotSensor:
         rospy.Subscriber('/camera/image_raw', Image, self._front_camera_state_update_handler)
         rospy.Subscriber('/gps/fix', NavSatFix, self._gps_state_update_handler)
         rospy.Subscriber('/scan', LaserScan, self._laser_scan_state_update_handler)
+        rospy.Subscriber('/cmd_vel', Twist, self._cmd_vel_state_update_handler)
 
     def register_state_update_callback(self, sensor_type, callback):
         if sensor_type in self._state_update_callback_registry:
