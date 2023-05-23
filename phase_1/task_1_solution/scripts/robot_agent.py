@@ -13,7 +13,7 @@ class UcvRobotAgent:
         rospy.init_node(node_id, anonymous=False)
 
         self.perception = UcvRobotPerception(debug=debug)
-        self.control = UcvRobotControl(rate=10)
+        self.control = UcvRobotControl(publishing_rate_in_hz=10)
         self.planner = UcvRobotPlanner(control=self.control, perception=self.perception)
 
     def run(self):
