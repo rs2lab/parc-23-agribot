@@ -2,12 +2,14 @@ import rospy
 import cv2
 
 from robot_perception import UcvSensorType
+from cv2_bridge import CvBridge
 
 
 class UcvRobotPlanner:
     def __init__(self, control, perception):
         self._control = control
         self._perception = perception
+        self._bridge = CvBridge()
 
         # NOTE: be aware that we might have to face a 'race condition' (a concurrency problem)
         #   if the state of the robot planner object is accessed by the callbacks when the
@@ -45,8 +47,10 @@ class UcvRobotPlanner:
 
     def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""
-        rospy.loginfo('Executing at planner')
-        # TODO
+        if self.perception.front_camera_state is not None:
+            frame = self._bridge.imgmsg_to_cv2(self.perception.front_camera_state)
+            cv2.imshow('camera', frame)
+            cv2.waitKey(1)
 
     def on_front_camera_state_update(self, data):
         pass # TODO: react to state update?
