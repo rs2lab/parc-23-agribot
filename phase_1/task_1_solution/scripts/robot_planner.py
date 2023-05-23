@@ -43,9 +43,9 @@ class UcvRobotPlanner:
         and determine the best course of action to be taken by the robot."""
         pass # TODO
 
-    def execute(self, hz):
+    def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""
-        rospy.loginfo('Executing at %f hz' % hz)
+        rospy.loginfo('Executing at planner')
         # TODO
 
     def on_front_camera_state_update(self, data):

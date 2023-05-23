@@ -13,18 +13,16 @@ class UcvRobotAgent:
         rospy.init_node(node_id, anonymous=False)
 
         self.perception = UcvRobotPerception(debug=debug)
-        self.control = UcvRobotControl()
+        self.control = UcvRobotControl(rate=10)
         self.planner = UcvRobotPlanner(control=self.control, perception=self.perception)
 
-    def run(self, hz = 10):
+    def run(self):
         rospy.loginfo(f'-- Initializing {self._node_id!r} node...')
-        rate = rospy.Rate(hz)
 
         try:
             while not rospy.is_shutdown():
-                self.planner.execute(hz)
-                rate.sleep()
+                self.planner.execute()
         except rospy.exceptions.ROSInterruptException:
-            rospy.loginfo('Received interrupt signal')
+            rospy.loginfo('-- Received interrupt signal')
 
         rospy.loginfo(f'-- Terminating {self._node_id!r} node.')
