@@ -2,6 +2,7 @@ import rospy
 
 from robot_perception import UcvRobotPerception
 from robot_control import UcvRobotControl
+from robot_planner import UcvRobotPlanner
 
 
 class UcvRobotAgent:
@@ -12,8 +13,15 @@ class UcvRobotAgent:
         rospy.init_node(node_id, anonymous=False)
 
         self.perception = UcvRobotPerception(debug=debug)
-        self.control = UcvRobotControl(self.perception)
+        self.control = UcvRobotControl()
+        self.planner = UcvRobotPlanner(control=self.control, perception=self.perception)
 
-    def run(self):
-        rospy.spin()
-        rospy.loginfo(f'Terminating Task 1 Solver Agent {self._node_id!r}')
+    def run(self, hz = 10):
+        rate = rospy.Rate(hz)
+        rospy.loginfo(f'-- Initializing {self._node_id!r} node...')
+
+        while not rospy.is_shutdown():
+            self.planner.execute(hz)
+            rate.sleep()
+
+        rospy.loginfo(f'-- Terminating {self._node_id!r} node.')
