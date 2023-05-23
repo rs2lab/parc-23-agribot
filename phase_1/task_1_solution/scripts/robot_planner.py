@@ -2,7 +2,7 @@ import rospy
 import cv2
 
 from robot_perception import UcvSensorType
-from cv2_bridge import CvBridge
+from cv_bridge import CvBridge
 
 
 class UcvRobotPlanner:
