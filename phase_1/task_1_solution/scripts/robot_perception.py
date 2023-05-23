@@ -18,7 +18,7 @@ class UcvSensorType(enum.Enum):
     CMD_VEL = 'cmd_vel'
 
 
-class UcvRobotSensor:
+class UcvRobotPerception:
     def __init__(self, debug = False):
         self.debug = debug
 
@@ -151,7 +151,7 @@ class UcvRobotSensor:
         Attributes:
             - linear.x: float64
             - linear.y: float64
-            - linear.y: float64
+            - linear.z: float64
             - angular.x: float64
             - angular.y: float64
             - angular.z: float64
