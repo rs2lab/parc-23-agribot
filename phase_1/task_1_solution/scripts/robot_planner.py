@@ -47,8 +47,8 @@ class UcvRobotPlanner:
 
     def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""
-        if self.perception.front_camera_state is not None:
-            frame = self._bridge.imgmsg_to_cv2(self.perception.front_camera_state)
+        if self._perception.front_camera_state is not None:
+            frame = self._bridge.imgmsg_to_cv2(self._perception.front_camera_state)
             cv2.imshow('camera', frame)
             cv2.waitKey(1)
 
