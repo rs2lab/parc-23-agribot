@@ -20,7 +20,7 @@ class UcvRobotAgent:
         rospy.loginfo(f'-- Initializing {self._node_id!r} node...')
 
         try:
-            while not rospy.is_shutdown():
+            while rospy.is_shutdown() is False:
                 self.planner.execute()
         except rospy.exceptions.ROSInterruptException:
             rospy.loginfo('-- Received interrupt signal')
