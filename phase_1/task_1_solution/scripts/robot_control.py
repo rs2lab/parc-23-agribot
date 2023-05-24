@@ -15,7 +15,7 @@ class UcvRobotControl:
     def cmd_vel_pub(self):
         return self._cmd_vel_pub
 
-    def publish_to_cmd_vel(twist_move_cmd):
+    def publish_to_cmd_vel(self, twist_move_cmd):
         self._cmd_vel_pub.publish(twist_move_cmd)
         self.rate.sleep()
 
@@ -29,8 +29,8 @@ class UcvRobotControl:
         cmd.angular.z = 0.0
         self.publish_to_cmd_vel(cmd)
 
-    def move_regular(self, x, theta):
+    def move_regular(self, x=0, theta=0):
         twist = Twist()
-        twist.linear.x = X
+        twist.linear.x = x
         twist.angular.z = theta
         self.publish_to_cmd_vel(twist)
