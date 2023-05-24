@@ -36,6 +36,17 @@ def detect_plants(image, lower_adjust = -10, upper_adjust = 10, image_is_hsv = F
     )
 
 
+def detect_stake(image, lower_adjust = -10, upper_adjust = 10, image_is_hsv = False):
+    if not image_is_hsv:
+        image = convert_image_to_hsv(image)
+    return detect_color_profile(
+        image=image,
+        lower_bound=np.array((20, 131, 166)) + lower_adjust,
+        upper_bound=np.array((22, 192, 196)) + upper_adjust,
+        blur_image=False,
+    )
+
+
 def convert_image_to_hsv(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HSV_FULL)
 
