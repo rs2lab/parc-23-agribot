@@ -3,6 +3,7 @@ import cv2
 
 import numpy as np
 import vision as v
+import constants as cons
 
 from robot_perception import UcvSensorType
 from cv_bridge import CvBridge
@@ -25,8 +26,9 @@ class UcvRobotPlanner:
         if front_camera_state is not None:
             frame = self._bridge.imgmsg_to_cv2(front_camera_state)
             image = v.remove_dark_area(frame)
-            image = v.detect_plants(image)
-            lines = v.hough_lines(image)
+            image = v.mask_image(image, cons.FRONT_MASK_01)
+            image = v.detect_plants(image, image_is_hsv=False)
+            lines = v.hough_lines(image, image_is_canny=False)
             image = v.draw_lines_on_image(frame, lines, (0, 10, 200))
             cv2.imshow('camera', image)
             cv2.waitKey(1)

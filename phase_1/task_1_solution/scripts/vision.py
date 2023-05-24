@@ -18,31 +18,26 @@ def segment_image(image, attempts = 10, k = 4, criteria = DEFAULT_SEG_CRT):
     return res.reshape((image.shape))
 
 
-def detect_segmented_color_profile(image, lower_bound, upper_bound, blur_image = True, mask = FRONT_MASK_01):
+def detect_color_profile(image, lower_bound, upper_bound, blur_image = False):
     if blur_image is True:
         image = cv2.GaussianBlur(image, (5, 5), 0)
-    image_masked = mask_image(image, mask)
-    segmented_image = segment_image(image_masked, k=6)
-    color_mask = cv2.inRange(segmented_image, lower_bound, upper_bound)
-    return cv2.bitwise_and(segmented_image, segmented_image, mask=color_mask)
+    color_mask = cv2.inRange(image, lower_bound, upper_bound)
+    return cv2.bitwise_and(image, image, mask=color_mask)
 
 
-def detect_plants(image, lower_adjust = -10, upper_adjust = 5, mask = FRONT_MASK_01):
-    return detect_segmented_color_profile(
+def detect_plants(image, lower_adjust = -10, upper_adjust = 10, image_is_hsv = False):
+    if not image_is_hsv:
+        image = convert_image_to_hsv(image)
+    return detect_color_profile(
         image=image,
-        lower_bound=np.array([90, 120, 40]) + lower_adjust,
-        upper_bound=np.array([100, 220, 70]) + upper_adjust,
-        mask = mask,
+        lower_bound=np.array((63, 166, 137)) + lower_adjust,
+        upper_bound=np.array([65, 208, 157]) + upper_adjust,
+        blur_image=False,
     )
 
 
-def detect_ground(image, lower_adjust = -4, upper_adjust = 10, mask = FRONT_MASK_01):
-    return detect_segmented_color_profile(
-        image=image,
-        lower_bound=np.array([105, 90, 55]) + lower_adjust,
-        upper_bound=np.array([165, 140, 120]) + upper_adjust,
-        mask = mask,
-    )
+def convert_image_to_hsv(image):
+    return cv2.cvtColor(image, cv2.COLOR_RGB2HSV_FULL)
 
 
 def canny(image, thresh1 = 50, thresh2 = 100, blur_image = False):
@@ -56,9 +51,8 @@ def canny(image, thresh1 = 50, thresh2 = 100, blur_image = False):
 
 def make_coordinates(image, line_params):
     slope, intercept = line_params
-
     y1 = image.shape[0]
-    y2 = int(y1 * 0.6)
+    y2 = int(y1 * 0.8)
     x1 = int((y1 - intercept) / slope)
     x2 = int((y2 - intercept) / slope)
     return np.array([x1, y1, x2, y2])
