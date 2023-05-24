@@ -32,21 +32,19 @@ class UcvRobotControl:
 
     def stop(self):
         cmd = Twist()
-
         cmd.linear.x = 0.0
         cmd.linear.y = 0.0
         cmd.linear.z = 0.0
         cmd.angular.x = 0.0
         cmd.angular.y = 0.0
         cmd.angular.z = 0.0
-
         self.publish_to_cmd_vel(cmd, 0)
 
     def move_regular(self, x=0, theta=0, secs=1):
         twist = Twist()
-
         twist.linear.x = x
         twist.angular.z = theta
-
         self.publish_to_cmd_vel(twist, secs)
 
+    def execute_plan(self, plan):
+        self.publish_to_cmd_vel(plan.to_twist(), plan.secs)

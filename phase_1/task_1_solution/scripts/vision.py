@@ -103,5 +103,9 @@ def draw_lines_on_image(image, lines, color_bgr = (255, 0, 0)):
     return cv2.addWeighted(image, 0.8, line_image, 1, 1)
 
 
-def remove_dark_area(image, yy_thresh = DARK_AREA_CROP_YY_THRESH):
-    return image[0:yy_thresh, ::]
+def crop_front_image(image, yy_thresh = DARK_AREA_CROP_YY_THRESH):
+    return image[::yy_thresh, ::]
+
+
+def crop_lateral_image(image, xx_thresh = LATERAL_CROP_XX_THRESH):
+    return image[::, xx_thresh::]

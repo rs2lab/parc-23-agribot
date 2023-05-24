@@ -31,3 +31,4 @@ class UcvRobotAgent:
     def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""
         plan = self.planner.plan()
+        self.control.execute_plan(plan)
