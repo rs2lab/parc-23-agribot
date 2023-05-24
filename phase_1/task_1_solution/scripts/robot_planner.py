@@ -26,7 +26,6 @@ class UcvRobotPlanner:
             frame = self._bridge.imgmsg_to_cv2(front_camera_state)
             image = v.remove_dark_area(frame)
             image = v.detect_plants(image)
-            image = v.canny(image)
             lines = v.hough_lines(image)
             image = v.draw_lines_on_image(frame, lines, (0, 10, 200))
             cv2.imshow('camera', image)

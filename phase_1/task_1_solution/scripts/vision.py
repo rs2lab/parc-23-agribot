@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 
-MASK = cv2.imread('../images/front_vision_mask_01.png', 0)
-DEFAULT_SEG_CRT = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+from constants import *
 
 
 def mask_image(image, mask):
@@ -19,28 +18,30 @@ def segment_image(image, attempts = 10, k = 4, criteria = DEFAULT_SEG_CRT):
     return res.reshape((image.shape))
 
 
-def detect_segmented_color_profile(image, lower_bound, upper_bound, blur_image = True):
+def detect_segmented_color_profile(image, lower_bound, upper_bound, blur_image = True, mask = FRONT_MASK_01):
     if blur_image is True:
         image = cv2.GaussianBlur(image, (5, 5), 0)
-    image_masked = mask_image(image, MASK)
+    image_masked = mask_image(image, mask)
     segmented_image = segment_image(image_masked, k=6)
     color_mask = cv2.inRange(segmented_image, lower_bound, upper_bound)
     return cv2.bitwise_and(segmented_image, segmented_image, mask=color_mask)
 
 
-def detect_plants(image, lower_adjust = -10, upper_adjust = 5):
+def detect_plants(image, lower_adjust = -10, upper_adjust = 5, mask = FRONT_MASK_01):
     return detect_segmented_color_profile(
         image=image,
         lower_bound=np.array([90, 120, 40]) + lower_adjust,
         upper_bound=np.array([100, 220, 70]) + upper_adjust,
+        mask = mask,
     )
 
 
-def detect_ground(image, lower_adjust = -4, upper_adjust = 10):
+def detect_ground(image, lower_adjust = -4, upper_adjust = 10, mask = FRONT_MASK_01):
     return detect_segmented_color_profile(
         image=image,
         lower_bound=np.array([105, 90, 55]) + lower_adjust,
         upper_bound=np.array([165, 140, 120]) + upper_adjust,
+        mask = mask,
     )
 
 
@@ -80,7 +81,9 @@ def average_slope_intercep(image, lines):
     right_line = make_coordinates(image, right_fit_average)
     return np.array([left_line, right_line])
 
-def hough_lines(image, min_line_len = 20, max_line_gap = 20):
+def hough_lines(image, min_line_len = 20, max_line_gap = 20, image_is_canny = False):
+    if not image_is_canny:
+        image = canny(image, blur_image = True)
     return cv2.HoughLinesP(image, 2, np.pi / 180, 10, np.array([]), min_line_len, max_line_gap)
 
 
@@ -94,5 +97,5 @@ def draw_lines_on_image(image, lines, color_rgb = (255, 0, 0)):
     return cv2.addWeighted(image, 0.8, line_image, 1, 1)
 
 
-def remove_dark_area(image, yy_thresh = 325):
+def remove_dark_area(image, yy_thresh = DARK_AREA_CROP_YY_THRESH):
     return image[0:yy_thresh, ::]
