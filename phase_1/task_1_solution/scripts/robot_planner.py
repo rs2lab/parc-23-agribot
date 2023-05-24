@@ -18,7 +18,13 @@ class UcvRobotPlanner:
     def plan(self):
         """Analyse the information from the perception mechanisms
         and determine the best course of action to be taken by the robot."""
-        pass # TODO
+        current_front_cam_state = self._perception.front_camera_state
+        current_left_cam_state = self._perception.left_camera_state
+        current_right_cam_state = self._perception.right_camera_state
+        current_scanner_state = self._perception.laser_scan_state
+        current_gps_state = self._perception.gps_state
+        current_cmd_vel = self._perception.cmd_vel_state
+        #TODO: proccess the information and return the best control strategy
 
     def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""

@@ -75,6 +75,7 @@ def average_slope_intercep(image, lines):
     right_line = make_coordinates(image, right_fit_average)
     return np.array([left_line, right_line])
 
+
 def hough_lines(image, min_line_len = 20, max_line_gap = 20, image_is_canny = False):
     if not image_is_canny:
         image = canny(image, blur_image = True)
