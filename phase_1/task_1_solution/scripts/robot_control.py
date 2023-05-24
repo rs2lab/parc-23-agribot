@@ -8,10 +8,29 @@ class UcvRobotControl:
         self.rate = rospy.Rate(publishing_rate_in_hz)
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size = 10)
 
+    def change_publishing_rate_to(self, hz):
+        self.rate = rospy.Rate(hz)
+
     @property
     def cmd_vel_pub(self):
         return self._cmd_vel_pub
 
-    def publish_cmd_vel(twist_move_cmd):
+    def publish_to_cmd_vel(twist_move_cmd):
         self._cmd_vel_pub.publish(twist_move_cmd)
         self.rate.sleep()
+
+    def stop(self):
+        cmd = Twist()
+        cmd.linear.x = 0.0
+        cmd.linear.y = 0.0
+        cmd.linear.z = 0.0
+        cmd.angular.x = 0.0
+        cmd.angular.y = 0.0
+        cmd.angular.z = 0.0
+        self.publish_to_cmd_vel(cmd)
+
+    def move_regular(self, x, theta):
+        twist = Twist()
+        twist.linear.x = X
+        twist.angular.z = theta
+        self.publish_to_cmd_vel(twist)

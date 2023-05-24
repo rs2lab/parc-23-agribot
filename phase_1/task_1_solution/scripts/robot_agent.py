@@ -20,9 +20,14 @@ class UcvRobotAgent:
         rospy.loginfo(f'-- Initializing {self._node_id!r} node...')
 
         try:
-            while rospy.is_shutdown() is False:
-                self.planner.execute()
+            while not rospy.is_shutdown():
+                self.execute()
         except rospy.exceptions.ROSInterruptException:
             rospy.loginfo('-- Received interrupt signal')
 
         rospy.loginfo(f'-- Terminating {self._node_id!r} node.')
+
+
+    def execute(self):
+        """Execute the plan using the control mechanisms to achieve the goal."""
+        plan = self.planner.plan()

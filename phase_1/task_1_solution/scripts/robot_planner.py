@@ -24,13 +24,8 @@ class UcvRobotPlanner:
         current_scanner_state = self._perception.laser_scan_state
         current_gps_state = self._perception.gps_state
         current_cmd_vel = self._perception.cmd_vel_state
-        #TODO: proccess the information and return the best control strategy
-
-    def execute(self):
-        """Execute the plan using the control mechanisms to achieve the goal."""
-        front_camera_state = self._perception.front_camera_state
-        if front_camera_state is not None:
-            frame = self._bridge.imgmsg_to_cv2(front_camera_state)
+        if current_front_cam_state is not None:
+            frame = self._bridge.imgmsg_to_cv2(current_front_cam_state)
             image = v.remove_dark_area(frame)
             image = v.mask_image(image, cons.FRONT_MASK_01)
             image = v.detect_plants(image, image_is_hsv=False)
@@ -38,3 +33,6 @@ class UcvRobotPlanner:
             image = v.draw_lines_on_image(frame, lines, (0, 10, 200))
             cv2.imshow('camera', image)
             cv2.waitKey(1)
+        #TODO: proccess the information and return the best control strategy
+        return None
+
