@@ -8,7 +8,7 @@ def mask_image(image, mask):
     return cv2.bitwise_and(image, image, mask=mask)
 
 
-def segment_image(image, attempts = 10, k = 4, criteria = DEFAULT_SEG_CRT):
+def kmeans_segmentation(image, attempts = 10, k = 4, criteria = DEFAULT_SEG_CRT):
     td_img = np.float32(image.reshape((-1, 3)))
     _, label, center = cv2.kmeans(td_img, k, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
 
@@ -93,12 +93,12 @@ def hough_lines(image, min_line_len = 20, max_line_gap = 20, image_is_canny = Fa
     return cv2.HoughLinesP(image, 2, np.pi / 180, 10, np.array([]), min_line_len, max_line_gap)
 
 
-def draw_lines_on_image(image, lines, color_rgb = (255, 0, 0)):
+def draw_lines_on_image(image, lines, color_bgr = (255, 0, 0)):
     line_image = np.zeros_like(image)
 
     if lines is not None:
         for x1, y1, x2, y2 in lines.reshape(-1, 4):
-            cv2.line(line_image, (x1, y1), (x2, y2), color_rgb, 10)
+            cv2.line(line_image, (x1, y1), (x2, y2), color_bgr, 10)
 
     return cv2.addWeighted(image, 0.8, line_image, 1, 1)
 
