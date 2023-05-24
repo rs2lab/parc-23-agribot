@@ -1,6 +1,9 @@
 import rospy
 import cv2
 
+import numpy as np
+import vision as v
+
 from robot_perception import UcvSensorType
 from cv_bridge import CvBridge
 
@@ -20,6 +23,10 @@ class UcvRobotPlanner:
         """Execute the plan using the control mechanisms to achieve the goal."""
         if self._perception.front_camera_state is not None:
             frame = self._bridge.imgmsg_to_cv2(self._perception.front_camera_state)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            cv2.imshow('camera', frame)
+            image = v.remove_dark_area(frame)
+            image = v.detect_plants(image)
+            image = v.canny(image)
+            lines = v.hough_lines(image)
+            image = v.draw_lines_on_image(frame, lines, (0, 10, 200))
+            cv2.imshow('camera', image)
             cv2.waitKey(1)
