@@ -152,11 +152,11 @@ class UcvRobotPlanner:
             frame = self._bridge.imgmsg_to_cv2(current_front_cam_state)
             image = frame
 
-            if closest_front_left_plant_line and closest_right_plant_line:
+            if closest_front_left_plant_line is not None and closest_right_plant_line is not None:
                 front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
                 image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
 
-            if closest_front_left_stake_line and closest_front_right_stake_line:
+            if closest_front_left_stake_line is not None and closest_front_right_stake_line is not None:
                 front_stake_lines = np.hstack((closest_front_left_stake_line, closest_front_right_stake_line))
                 image = v.draw_lines_on_image(image, front_stake_lines.reshape(-1, 4), (150, 10, 5))
 
