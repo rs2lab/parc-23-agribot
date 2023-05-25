@@ -59,13 +59,16 @@ class UcvRobotPlanner:
             point=cons.FRONT_VISION_RIGHT_POINT
         )
 
-    def _calculate_detected_line(self, cam_state, *, crop_fn=None, detection_fn, reduce_fn):
+    def _calculate_detected_line(self, cam_state, *, detection_fn, reduce_fn, crop_fn=None, mask=None):
         line = None
         if cam_state is not None:
             image = self._bridge.imgmsg_to_cv2(cam_state)
 
             if crop_fn is not None:
                 image = crop_fn(image)
+
+            if mask it not None:
+                image = mask(image)
 
             image = detection_fn(image, image_is_hsv=False)
             lines = v.hough_lines(image, image_is_canny=False)
@@ -125,6 +128,7 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
             reduce_fn=self._front_left_line_reducer,
+            mask=v.mask_image
         )
 
         closest_front_left_stake_line = self._calculate_detected_line(
@@ -132,6 +136,7 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_stake,
             reduce_fn=self._front_left_line_reducer,
+            mask=v.mask_image
         )
 
         closest_front_right_plant_line = self._calculate_detected_line(
@@ -139,6 +144,7 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
             reduce_fn=self._front_right_line_reducer,
+            mask=v.mask_image
         )
 
         closest_front_right_stake_line = self._calculate_detected_line(
@@ -146,6 +152,7 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_stake,
             reduce_fn=self._front_right_line_reducer,
+            mask=v.mask_image
         )
 
         if current_front_cam_state is not None:
