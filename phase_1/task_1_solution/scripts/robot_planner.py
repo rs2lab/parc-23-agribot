@@ -91,7 +91,7 @@ class UcvRobotPlanner:
         closest_left_stake_line = self._calculate_closest_lateral_detected_line(
             lateral_cam_state=current_left_cam_state,
             detection_fn=v.detect_stake,
-            reduce_fn=self._left_cam_line_reduce_fn,
+            reduce_fn=self._left_cam_line_reducer,
         )
 
         closest_left_plant_line = self._calculate_closest_lateral_detected_line(
