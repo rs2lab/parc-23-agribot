@@ -104,8 +104,8 @@ def draw_lines_on_image(image, lines, color_bgr = (255, 0, 0)):
 
 
 def crop_front_image(image, yy_thresh = DARK_AREA_CROP_YY_THRESH):
-    return image[::yy_thresh, ::]
+    return image[:yy_thresh, ::]
 
 
 def crop_lateral_image(image, xx_thresh = LATERAL_CROP_XX_THRESH):
-    return image[::, xx_thresh::]
+    return image[::, xx_thresh:]
