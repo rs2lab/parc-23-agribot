@@ -59,7 +59,7 @@ class UcvRobotPlanner:
             point=cons.FRONT_VISION_RIGHT_POINT
         )
 
-    def _calculate_detected_line(self, cam_state, *, detection_fn, reduce_fn, crop_fn=None, mask=None):
+    def _calculate_detected_line(self, cam_state, *, detection_fn, reduce_fn, crop_fn=None, mask_fn=None, mask=None):
         line = None
         if cam_state is not None:
             image = self._bridge.imgmsg_to_cv2(cam_state)
@@ -67,8 +67,8 @@ class UcvRobotPlanner:
             if crop_fn is not None:
                 image = crop_fn(image)
 
-            if mask is not None:
-                image = mask(image)
+            if mask_fn is not None and mask is not None:
+                image = mask_fn(image, mask=mask)
 
             image = detection_fn(image, image_is_hsv=False)
             lines = v.hough_lines(image, image_is_canny=False)
@@ -128,7 +128,8 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
             reduce_fn=self._front_left_line_reducer,
-            mask=v.mask_image
+            mask_fn=v.mask_image,
+            mask=cons.FRONT_MASK_01,
         )
 
         closest_front_left_stake_line = self._calculate_detected_line(
@@ -136,7 +137,8 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_stake,
             reduce_fn=self._front_left_line_reducer,
-            mask=v.mask_image
+            mask_fn=v.mask_image,
+            mask=cons.FRONT_MASK_01,
         )
 
         closest_front_right_plant_line = self._calculate_detected_line(
@@ -144,7 +146,8 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
             reduce_fn=self._front_right_line_reducer,
-            mask=v.mask_image
+            mask_fn=v.mask_image,
+            mask=cons.FRONT_MASK_01,
         )
 
         closest_front_right_stake_line = self._calculate_detected_line(
@@ -152,7 +155,8 @@ class UcvRobotPlanner:
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_stake,
             reduce_fn=self._front_right_line_reducer,
-            mask=v.mask_image
+            mask_fn=v.mask_image,
+            mask=cons.FRONT_MASK_01,
         )
 
         if current_front_cam_state is not None:
