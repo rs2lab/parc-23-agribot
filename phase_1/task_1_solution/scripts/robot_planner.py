@@ -67,7 +67,7 @@ class UcvRobotPlanner:
             if crop_fn is not None:
                 image = crop_fn(image)
 
-            if mask it not None:
+            if mask is not None:
                 image = mask(image)
 
             image = detection_fn(image, image_is_hsv=False)
