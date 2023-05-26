@@ -30,5 +30,5 @@ class UcvRobotAgent:
 
     def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""
-        plan = self.planner.plan()
-        self.control.execute_plan(plan)
+        if (plan := self.planner.plan()) is not None:
+            self.control.execute_plan(plan)

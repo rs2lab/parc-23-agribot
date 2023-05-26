@@ -19,16 +19,18 @@ class UcvRobotControl:
 
     def publish_to_cmd_vel(self, twist, secs=0):
         now = time.time()
-        while secs == 0 or (time.time() - now) < secs:
+        while secs == 0 or (sep := time.time() - now) < secs:
             if self._debug is True:
                 rospy.loginfo(
-                    'Publishing cmd vel: x = %f, z = %f'
-                    % (twist.linear.x, twist.angular.z)
+                    'Publishing cmd vel: x = %f, z = %f, timelapse = %f / %f'
+                    % (twist.linear.x, twist.angular.z, sep, secs)
                 )
+
             self._cmd_vel_pub.publish(twist)
+            self.rate.sleep()
+
             if secs == 0: # should execute only once
                 break
-            self.rate.sleep()
 
     def stop(self):
         cmd = Twist()
