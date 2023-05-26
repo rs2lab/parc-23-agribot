@@ -59,8 +59,8 @@ class UcvRobotPlanner:
             point=cons.FRONT_VISION_RIGHT_POINT
         )
 
-    def _calculate_detected_line(self, cam_state, *, detection_fn, reduce_fn, crop_fn=None, mask_fn=None, mask=None):
-        line = None
+    def _calculate_detected_lines(self, cam_state, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
+        lines = None
         if cam_state is not None:
             image = self._bridge.imgmsg_to_cv2(cam_state)
 
@@ -73,9 +73,9 @@ class UcvRobotPlanner:
             image = detection_fn(image, image_is_hsv=False)
             lines = v.hough_lines(image, image_is_canny=False)
 
-            if lines is not None:
-                line = reduce(reduce_fn, lines.reshape(-1, 4))
-        return line
+            if lines is not None and reduce_fn is not None:
+                lines = reduce(reduce_fn, lines.reshape(-1, 4))
+        return lines
 
     def plan(self, secs=None):
         """Analyse the information from the perception mechanisms
@@ -93,28 +93,28 @@ class UcvRobotPlanner:
 
         ## Lateral Cams Line Detection
 
-        closest_left_stake_line = self._calculate_detected_line(
+        closest_left_stake_line = self._calculate_detected_lines(
             cam_state=current_left_cam_state,
             crop_fn=v.crop_lateral_image,
             detection_fn=v.detect_stake,
             reduce_fn=self._left_cam_line_reducer,
         )
 
-        closest_left_plant_line = self._calculate_detected_line(
+        closest_left_plant_line = self._calculate_detected_lines(
             cam_state=current_left_cam_state,
             crop_fn=v.crop_lateral_image,
             detection_fn=v.detect_plants,
             reduce_fn=self._left_cam_line_reducer,
         )
 
-        closest_right_stake_line = self._calculate_detected_line(
+        closest_right_stake_line = self._calculate_detected_lines(
             cam_state=current_right_cam_state,
             crop_fn=v.crop_lateral_image,
             detection_fn=v.detect_stake,
             reduce_fn=self._right_cam_line_reducer,
         )
 
-        closest_right_plant_line = self._calculate_detected_line(
+        closest_right_plant_line = self._calculate_detected_lines(
             cam_state=current_right_cam_state,
             crop_fn=v.crop_lateral_image,
             detection_fn=v.detect_plants,
@@ -123,16 +123,16 @@ class UcvRobotPlanner:
 
         ## Front Cam Line Detection
 
-        closest_front_left_plant_line = self._calculate_detected_line(
+        closest_front_left_plant_line = self._calculate_detected_lines(
             cam_state=current_front_cam_state,
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
-            reduce_fn=self._front_left_line_reducer,
+            reduce_fn=self._front_left_line_rejducer,
             mask_fn=v.mask_image,
             mask=cons.FRONT_MASK_01,
         )
 
-        closest_front_left_stake_line = self._calculate_detected_line(
+        closest_front_left_stake_line = self._calculate_detected_lines(
             cam_state=current_front_cam_state,
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_stake,
@@ -141,7 +141,7 @@ class UcvRobotPlanner:
             mask=cons.FRONT_MASK_01,
         )
 
-        closest_front_right_plant_line = self._calculate_detected_line(
+        closest_front_right_plant_line = self._calculate_detected_lines(
             cam_state=current_front_cam_state,
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
@@ -150,7 +150,7 @@ class UcvRobotPlanner:
             mask=cons.FRONT_MASK_01,
         )
 
-        closest_front_right_stake_line = self._calculate_detected_line(
+        closest_front_right_stake_line = self._calculate_detected_lines(
             cam_state=current_front_cam_state,
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_stake,
@@ -163,7 +163,7 @@ class UcvRobotPlanner:
             frame = self._bridge.imgmsg_to_cv2(current_front_cam_state)
             image = frame
 
-            if closest_front_left_plant_line is not None and closest_right_plant_line is not None:
+            if closest_front_left_plant_line is not None and closest_front_right_plant_line is not None:
                 front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
                 image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
 
