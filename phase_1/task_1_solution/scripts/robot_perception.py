@@ -46,6 +46,7 @@ class UcvRobotPerception:
         rospy.Subscriber('/cmd_vel', Twist, self._cmd_vel_state_update_handler)
 
     def register_state_update_callback(self, sensor_type, callback):
+        """Add a callback that will be called when the state of a sensor is updated."""
         if sensor_type in self._state_update_callback_registry:
             self._state_update_callback_registry[sensor_type].append(callback)
             return True

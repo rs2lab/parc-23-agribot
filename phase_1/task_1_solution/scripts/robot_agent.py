@@ -8,27 +8,33 @@ from robot_planner import UcvRobotPlanner
 class UcvRobotAgent:
     def __init__(self, node_id = 'ucv_task_1_solver_robot_agent', debug = False):
         self._node_id = node_id
+        self.debug = debug
 
-        rospy.loginfo(f'Starting Task 1 Solver Agent {self._node_id!r}')
+        self._log(f'Starting Task 1 Solver Agent {self._node_id!r}')
         rospy.init_node(node_id, anonymous=False)
 
-        self.perception = UcvRobotPerception(debug=debug)
-        self.control = UcvRobotControl(publishing_rate_in_hz=10)
+        self.perception = UcvRobotPerception(debug=self.debug)
+        self.control = UcvRobotControl(publishing_rate_in_hz=10, debug=self.debug)
         self.planner = UcvRobotPlanner(control=self.control, perception=self.perception)
 
+    def _log(self, message):
+        if self.debug is True:
+            rospy.loginfo(message)
+
     def run(self):
-        rospy.loginfo(f'-- Initializing {self._node_id!r} node...')
+        """Continuously execute the agent to achieve the goal."""
+        self._log(f'-- Initializing {self._node_id!r} node...')
 
         try:
             while not rospy.is_shutdown():
                 self.execute()
         except rospy.exceptions.ROSInterruptException:
-            rospy.loginfo('-- Received interrupt signal')
+            self._log('-- Received interrupt signal')
 
         self.control.stop()
-        rospy.loginfo(f'-- Terminating {self._node_id!r} node.')
+        self._log(f'-- Terminating {self._node_id!r} node.')
 
     def execute(self):
-        """Execute the plan using the control mechanisms to achieve the goal."""
+        """Execute the plan using control mechanisms to achieve the goal."""
         if (plan := self.planner.plan()) is not None:
             self.control.execute_plan(plan)
