@@ -13,9 +13,18 @@ class UcvRobotAgent:
         self._log(f'Starting Task 1 Solver Agent {self._node_id!r}')
         rospy.init_node(node_id, anonymous=False)
 
-        self.perception = UcvRobotPerception(debug=self.debug)
-        self.control = UcvRobotControl(publishing_rate_in_hz=10, debug=self.debug)
-        self.planner = UcvRobotPlanner(control=self.control, perception=self.perception)
+        self.perception = UcvRobotPerception(
+            debug=False
+        )
+        self.control = UcvRobotControl(
+            publishing_rate_in_hz=10,
+            debug=self.debug
+        )
+        self.planner = UcvRobotPlanner(
+            perception=self.perception,
+            control=self.control,
+            debug=debug
+        )
 
     def _log(self, message):
         if self.debug is True:

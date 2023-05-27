@@ -13,7 +13,8 @@ from functools import reduce
 
 
 class UcvSimpleActionPlan:
-    def __init__(self, x, theta, secs=0):
+    def __init__(self, x, theta, secs=0, debug=False):
+        self.debug = debug
         self.secs = secs
         self.theta = theta
         self.x = x
@@ -127,7 +128,7 @@ class UcvRobotPlanner:
             cam_state=current_front_cam_state,
             crop_fn=v.crop_front_image,
             detection_fn=v.detect_plants,
-            reduce_fn=self._front_left_line_rejducer,
+            reduce_fn=self._front_left_line_reducer,
             mask_fn=v.mask_image,
             mask=cons.FRONT_MASK_01,
         )

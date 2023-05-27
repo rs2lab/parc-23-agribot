@@ -21,6 +21,7 @@ class UcvRobotControl:
     def publish_cmd_vel(self, twist, secs=0):
         """Publish a `twist` command to the command vel topic for `secs` seconds."""
         now = time.time()
+        sep = 0
         while secs == 0 or (sep := time.time() - now) < secs:
             if self._debug is True:
                 rospy.loginfo(
