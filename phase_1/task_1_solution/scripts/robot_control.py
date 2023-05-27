@@ -6,9 +6,9 @@ from geometry_msgs.msg import Twist
 
 class UcvRobotControl:
     def __init__(self, publishing_rate_in_hz = 10, debug=False):
+        self.debug = debug
         self.rate = rospy.Rate(publishing_rate_in_hz)
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size = 10)
-        self._debug = debug
 
     @property
     def cmd_vel_pub(self):
@@ -23,7 +23,7 @@ class UcvRobotControl:
         now = time.time()
         sep = 0
         while secs == 0 or (sep := time.time() - now) < secs:
-            if self._debug is True:
+            if self.debug is True:
                 rospy.loginfo(
                     'Publishing cmd vel: x = %f, z = %f, timelapse = %f / %f'
                     % (twist.linear.x, twist.angular.z, sep, secs)

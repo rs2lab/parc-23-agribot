@@ -35,7 +35,8 @@ class UcvSimpleActionPlan:
 
 
 class UcvRobotPlanner:
-    def __init__(self, control, perception, default_plan_timeslot_in_secs=1):
+    def __init__(self, control, perception, default_plan_timeslot_in_secs=1, debug=False):
+        self.debug = debug
         self._control = control
         self._perception = perception
         self._bridge = CvBridge()
