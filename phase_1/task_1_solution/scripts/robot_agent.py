@@ -25,8 +25,8 @@ class UcvRobotAgent:
         except rospy.exceptions.ROSInterruptException:
             rospy.loginfo('-- Received interrupt signal')
 
+        self.control.stop()
         rospy.loginfo(f'-- Terminating {self._node_id!r} node.')
-
 
     def execute(self):
         """Execute the plan using the control mechanisms to achieve the goal."""

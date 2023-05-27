@@ -55,7 +55,7 @@ class UcvRobotPerception:
         if sensor_type in self._state_update_callback_registry:
             callbacks = self._state_update_callback_registry[sensor_type]
             if self.debug is True:
-                rospy.loginfo(f'Calling {len(callbacks)} callback for {sensor_type.value} sensor state update')
+                rospy.loginfo(f'Calling {len(callbacks)} callbacks for {sensor_type.value} sensor state update')
             for callback in callbacks:
                 callback(data)
 
