@@ -30,7 +30,7 @@ class UcvRobotAgent:
         if self.debug is True:
             rospy.loginfo(message)
 
-    def _on_shutdown():
+    def _on_shutdown(self):
         self.control.stop()
 
     def run(self):
