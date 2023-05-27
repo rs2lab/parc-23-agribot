@@ -37,27 +37,36 @@ class UcvSimpleActionPlan:
 class UcvRobotPlanner:
     def __init__(self, control, perception, default_plan_timeslot_in_secs=1, debug=False):
         self.debug = debug
+
         self._control = control
         self._perception = perception
         self._bridge = CvBridge()
 
         self._default_plan_secs = default_plan_timeslot_in_secs
 
-        self._left_cam_line_reducer = r.define_lateral_line_reducer(
-            highest_point=cons.LEFT_VISION_HIGH_POINT,
-            lowest_point=cons.LEFT_VISION_LOW_POINT
+        # self._left_cam_line_reducer = r.define_lateral_line_reducer(
+        #     highest_point=cons.LEFT_VISION_HIGH_POINT,
+        #     lowest_point=cons.LEFT_VISION_LOW_POINT
+        # )
+
+        # self._right_cam_line_reducer = r.define_lateral_line_reducer(
+        #     highest_point=cons.RIGHT_VISION_HIGH_POINT,
+        #     lowest_point=cons.RIGHT_VISION_LOW_POINT
+        # )
+
+        self._left_cam_line_reducer = r.define_line_reducer_on_point(
+            point=cons.LATERAL_LEFT_VISION_POINT - (cons.LATERAL_CROP_XX_THRESH, 0),
         )
 
-        self._right_cam_line_reducer = r.define_lateral_line_reducer(
-            highest_point=cons.RIGHT_VISION_HIGH_POINT,
-            lowest_point=cons.RIGHT_VISION_LOW_POINT
+        self._right_cam_line_reducer = r.define_line_reducer_on_point(
+            point=cons.LATERAL_RIGHT_VISION_POINT - (cons.LATERAL_CROP_XX_THRESH, 0),
         )
 
-        self._front_left_line_reducer = r.define_frontal_line_reducer(
+        self._front_left_line_reducer = r.define_line_reducer_on_point(
             point=cons.FRONT_VISION_LEFT_POINT
         )
 
-        self._front_right_line_reducer = r.define_frontal_line_reducer(
+        self._front_right_line_reducer = r.define_line_reducer_on_point(
             point=cons.FRONT_VISION_RIGHT_POINT
         )
 
