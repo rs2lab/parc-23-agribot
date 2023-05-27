@@ -44,22 +44,12 @@ class UcvRobotPlanner:
 
         self._default_plan_secs = default_plan_timeslot_in_secs
 
-        # self._left_cam_line_reducer = r.define_lateral_line_reducer(
-        #     highest_point=cons.LEFT_VISION_HIGH_POINT,
-        #     lowest_point=cons.LEFT_VISION_LOW_POINT
-        # )
-
-        # self._right_cam_line_reducer = r.define_lateral_line_reducer(
-        #     highest_point=cons.RIGHT_VISION_HIGH_POINT,
-        #     lowest_point=cons.RIGHT_VISION_LOW_POINT
-        # )
-
         self._left_cam_line_reducer = r.define_line_reducer_on_point(
-            point=cons.LATERAL_LEFT_VISION_POINT - (cons.LATERAL_CROP_XX_THRESH, 0),
+            point=cons.CROPPED_LATERAL_LEFT_VISION_POINT,
         )
 
         self._right_cam_line_reducer = r.define_line_reducer_on_point(
-            point=cons.LATERAL_RIGHT_VISION_POINT - (cons.LATERAL_CROP_XX_THRESH, 0),
+            point=cons.CROPPED_LATERAL_RIGHT_VISION_POINT,
         )
 
         self._front_left_line_reducer = r.define_line_reducer_on_point(

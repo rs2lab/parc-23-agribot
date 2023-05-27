@@ -30,21 +30,9 @@ def weighted_line_dist_to_point(line, point):
     return line_dist / inverse_weight
 
 
-def define_lateral_line_reducer(highest_point, lowest_point):
-    def reduce_function(a, b):
-        lhw = weighted_line_dist_to_point(a, highest_point)
-        llw = weighted_line_dist_to_point(a, lowest_point)
-        rhw = weighted_line_dist_to_point(b, highest_point)
-        rlh = weighted_line_dist_to_point(b, lowest_point)
-        dist_a = np.sqrt(llw**2 + lhw**2)
-        dist_b = np.sqrt(rhw**2 + rlh**2)
-        return a if dist_a < dist_b else b
-    return reduce_function
-
-
 def define_line_reducer_on_point(point):
     def reducer(a, b):
-        dist_a = weighted_line_dist_to_point(a, point)
-        dist_b = weighted_line_dist_to_point(b, point)
+        dist_a = closest_point_distance(point, a.reshape(2, 2))
+        dist_b = closest_point_distance(point, b.reshape(2, 2))
         return a if dist_a < dist_b else b
     return reducer
