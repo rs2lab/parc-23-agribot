@@ -30,10 +30,9 @@ class UcvRobotControl:
                 )
 
             self._cmd_vel_pub.publish(twist)
-            self.rate.sleep()
-
             if secs == 0: # should execute only once
                 break
+            self.rate.sleep()
 
     def stop(self):
         """Sets all variables responsible for the movement of the
