@@ -30,9 +30,13 @@ class UcvRobotAgent:
         if self.debug is True:
             rospy.loginfo(message)
 
+    def _on_shutdown():
+        self.control.stop()
+
     def run(self):
         """Continuously execute the agent to achieve the goal."""
         self._log(f'-- Initializing {self._node_id!r} node...')
+        rospy.on_shutdown(self._on_shutdown)
 
         try:
             while not rospy.is_shutdown():
@@ -40,7 +44,6 @@ class UcvRobotAgent:
         except rospy.exceptions.ROSInterruptException:
             self._log('-- Received interrupt signal')
 
-        self.control.stop()
         self._log(f'-- Terminating {self._node_id!r} node.')
 
     def execute(self):
