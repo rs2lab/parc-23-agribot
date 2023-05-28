@@ -105,7 +105,7 @@ class UcvRobotPlanner:
                 lines = reduce(reduce_fn, lines.reshape(-1, 4))
         return lines
 
-    def _theta_front_transfer_function(closest_front_left_line, closest_front_right_line):
+    def _theta_front_transfer_function(self, closest_front_left_line, closest_front_right_line):
         (xl, yl), dl = closest_point(cons.FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
         (xr, yr), dr = closest_point(cons.FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
         return (np.pi / 2) * np.tanh((dl - dr) / point_distance(xl, yl, xr, yr))
