@@ -201,7 +201,7 @@ class UcvRobotPlanner:
                 x = 0.1
                 theta = r.theta_front_transfer_function(
                     closest_front_left_line=closest_front_left_plant_line,
-                    closest_front_right_line=closest_front_right_plant_line
+                    closest_front_right_line=closest_front_right_plant_line,
                     left_ref_point=cons.FRONT_VISION_LEFT_POINT,
                     right_ref_point=cons.FRONT_VISION_RIGHT_POINT,
                 )
