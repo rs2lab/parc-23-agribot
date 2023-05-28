@@ -7,10 +7,7 @@ import constants as cons
 import ruler as r
 
 from geometry_msgs.msg import Twist
-from robot_perception import UcvSensorType
-from cv_bridge import CvBridge
 from functools import reduce
-from collections import deque
 
 from helpers import (
     ForgetfulMemory,
@@ -46,7 +43,6 @@ class UcvRobotPlanner:
 
         self._control = control
         self._perception = perception
-        self._bridge = CvBridge()
 
         self._last_actions_memory = ForgetfulMemory(5)
         self._next_actions_queue = BasicQueue()
@@ -90,7 +86,7 @@ class UcvRobotPlanner:
     def _calculate_detected_lines(self, cam_state, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
         lines = None
         if cam_state is not None:
-            image = self._bridge.imgmsg_to_cv2(cam_state)
+            image = v.imgmsg_to_cv2(cam_state)
 
             if crop_fn is not None:
                 image = crop_fn(image)
@@ -189,12 +185,12 @@ class UcvRobotPlanner:
         )
 
         if current_front_cam_state is not None:
-            frame = self._bridge.imgmsg_to_cv2(current_front_cam_state)
-            image = frame
+            # frame = v.imgmsg_to_cv2(current_front_cam_state)
+            # image = frame
 
             if closest_front_left_plant_line is not None and closest_front_right_plant_line is not None:
-                front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
-                image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
+                # front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
+                # image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
 
                 theta = r.theta_front_transfer_function(
                     closest_front_left_line=closest_front_left_plant_line,
@@ -212,10 +208,6 @@ class UcvRobotPlanner:
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0, secs=secs))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
                 return self._resolve_enqueued_actions()
-
-            # cv2.imshow('camera', image)
-            # cv2.waitKey(1)
-
 
         #TODO: proccess the information and return the best control strategy
         return UcvSimpleActionPlan(x=0, theta=0, secs=0)

@@ -2,6 +2,21 @@ import cv2
 import numpy as np
 
 from constants import *
+from cv_bridge import CvBridge
+from functools import lru_cache
+
+
+_BRIDGE_OBJ = CvBridge()
+
+
+@lru_cache(maxsize=6)
+def imgmsg_to_cv2(imgmsg):
+    return _BRIDGE_OBJ.imgmsg_to_cv2(imgmsg)
+
+
+@lru_cache(maxsize=6)
+def cv2_to_imgmsg(img):
+    return _BRIDGE_OBJ.cv2_to_imgmsg(img)
 
 
 def mask_image(image, mask):

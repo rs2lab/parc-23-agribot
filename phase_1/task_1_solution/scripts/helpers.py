@@ -1,5 +1,6 @@
 from collections import deque
-
+from cv_bridge import CvBridge
+from functools import lru_cache
 
 class ForgetfulMemory:
     def __init__(self, memory_size = 5):
@@ -13,9 +14,12 @@ class ForgetfulMemory:
         self._memory.append(value)
 
     def last(self):
-        if not seld.empty():
+        if not self.empty():
             return self._memory[-1]
         return None
+
+    def all(self):
+        return list(self._memory)
 
     def forget_all(self):
         self._memory.clear()
