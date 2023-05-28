@@ -198,7 +198,6 @@ class UcvRobotPlanner:
                 front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
                 image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
 
-                x = 0.1
                 theta = r.theta_front_transfer_function(
                     closest_front_left_line=closest_front_left_plant_line,
                     closest_front_right_line=closest_front_right_plant_line,
@@ -206,8 +205,10 @@ class UcvRobotPlanner:
                     right_ref_point=cons.FRONT_VISION_RIGHT_POINT,
                 )
 
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=x, theta=theta, secs=1))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=x, theta=-theta, secs=1))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=theta, secs=1))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=1))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=-theta, secs=1))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0))
                 return self._resolve_enqueued_actions()
 
