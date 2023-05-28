@@ -1,5 +1,10 @@
 import numpy as np
 
+from constants import (
+    FRONT_VISION_LEFT_POINT,
+    FRONT_VISION_RIGHT_POINT,
+)
+
 
 def line_dist_to_point(line, point):
     x1, y1, x2, y2 = line
@@ -36,3 +41,11 @@ def define_line_reducer_on_point(point):
         _, dist_b = closest_point(point, b.reshape(2, 2))
         return a if dist_a < dist_b else b
     return reducer
+
+
+def theta_front_transfer_function(closest_front_left_line, closest_front_right_line,
+            left_ref_point=FRONT_VISION_LEFT_POINT, right_ref_point=FRONT_VISION_RIGHT_POINT):
+        # -- skip this line --
+        (xl, yl), dl = closest_point(left_ref_point, closest_front_left_line.reshape(2, 2))
+        (xr, yr), dr = closest_point(right_ref_point, closest_front_right_line.reshape(2, 2))
+        return (np.pi / 2) * np.tanh((dl - dr) / point_distance(xl, yl, xr, yr))

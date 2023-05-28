@@ -105,11 +105,6 @@ class UcvRobotPlanner:
                 lines = reduce(reduce_fn, lines.reshape(-1, 4))
         return lines
 
-    def _theta_front_transfer_function(self, closest_front_left_line, closest_front_right_line):
-        (xl, yl), dl = closest_point(cons.FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
-        (xr, yr), dr = closest_point(cons.FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
-        return (np.pi / 2) * np.tanh((dl - dr) / point_distance(xl, yl, xr, yr))
-
     def plan(self, secs=None):
         """Analyse the information from the perception mechanisms
         and determine the best course of action to be taken by the robot."""
@@ -203,8 +198,13 @@ class UcvRobotPlanner:
                 front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
                 image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
 
-                theta = self._theta_front_transfer_function(closest_front_left_plant_line, closest_front_right_plant_line)
                 x = 0.1
+                theta = r.theta_front_transfer_function(
+                    closest_front_left_line=closest_front_left_plant_line,
+                    closest_front_right_line=closest_front_right_plant_line
+                    left_ref_point=cons.FRONT_VISION_LEFT_POINT,
+                    right_ref_point=cons.FRONT_VISION_RIGHT_POINT,
+                )
 
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=x, theta=theta, secs=1))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=x, theta=-theta, secs=1))
