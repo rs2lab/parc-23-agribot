@@ -84,7 +84,7 @@ class UcvRobotPlanner:
     def _resolve_enqueued_actions(self):
         """Returns the next action in the queue, removing it from the structure."""
         if not self._next_actions_queue.empty():
-            return seld._next_actions_queue.dequeue()
+            return self._next_actions_queue.dequeue()
         return UcvRobotPlanner(x=0, theta=0, secs=0)
 
     def _calculate_detected_lines(self, cam_state, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
