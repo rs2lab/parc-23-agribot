@@ -111,8 +111,6 @@ class UcvRobotPlanner:
         if self._has_enqueued_actions is True:
             return self._resolve_enqueued_actions()
 
-        if secs is None: secs = self._default_plan_secs
-
         ## Get Current Perceived States
 
         current_front_cam_state = self._perception.front_camera_state
@@ -205,10 +203,12 @@ class UcvRobotPlanner:
                     right_ref_point=cons.FRONT_VISION_RIGHT_POINT,
                 )
 
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=theta, secs=1))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=1))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=-theta, secs=1))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0))
+                secs = self._default_plan_secs if secs is None else secs
+
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=theta, secs=0))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=-theta, secs=0))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.2, theta=0, secs=secs))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0))
                 return self._resolve_enqueued_actions()
 

@@ -21,6 +21,7 @@ class UcvRobotAgent:
             debug=self.debug
         )
         self.planner = UcvRobotPlanner(
+            default_plan_timeslot_in_secs=1,
             perception=self.perception,
             control=self.control,
             debug=debug
