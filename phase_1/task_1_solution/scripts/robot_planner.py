@@ -154,7 +154,7 @@ class UcvRobotPlanner:
             detection_fn=v.detect_plants,
             reduce_fn=self._front_left_line_reducer,
             mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_01,
+            mask=cons.FRONT_MASK_03,
         )
 
         closest_front_left_stake_line = self._calculate_detected_lines(
@@ -163,7 +163,7 @@ class UcvRobotPlanner:
             detection_fn=v.detect_stake,
             reduce_fn=self._front_left_line_reducer,
             mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_01,
+            mask=cons.FRONT_MASK_03,
         )
 
         closest_front_right_plant_line = self._calculate_detected_lines(
@@ -172,7 +172,7 @@ class UcvRobotPlanner:
             detection_fn=v.detect_plants,
             reduce_fn=self._front_right_line_reducer,
             mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_01,
+            mask=cons.FRONT_MASK_03,
         )
 
         closest_front_right_stake_line = self._calculate_detected_lines(
@@ -181,16 +181,17 @@ class UcvRobotPlanner:
             detection_fn=v.detect_stake,
             reduce_fn=self._front_right_line_reducer,
             mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_01,
+            mask=cons.FRONT_MASK_03,
         )
 
         if current_front_cam_state is not None:
-            # frame = v.imgmsg_to_cv2(current_front_cam_state)
-            # image = frame
+            #frame = v.imgmsg_to_cv2(current_front_cam_state)
+            #image = frame
 
             if closest_front_left_plant_line is not None and closest_front_right_plant_line is not None:
-                # front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
-                # image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
+                #front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
+                #image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
+                #cv2.waitKey(1)
 
                 theta = r.theta_front_transfer_function(
                     closest_front_left_line=closest_front_left_plant_line,
@@ -202,10 +203,10 @@ class UcvRobotPlanner:
                 secs = self._default_plan_secs if secs is None else secs
                 rate = self._control.rate.sleep_dur.nsecs / 10**9
 
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=theta * rate, secs=secs))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=-theta * rate, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0, secs=secs))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=theta * rate, secs=secs))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=-theta * rate, secs=secs))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
                 return self._resolve_enqueued_actions()
 
