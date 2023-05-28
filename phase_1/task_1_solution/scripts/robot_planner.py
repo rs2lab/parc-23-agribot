@@ -10,6 +10,12 @@ from geometry_msgs.msg import Twist
 from robot_perception import UcvSensorType
 from cv_bridge import CvBridge
 from functools import reduce
+from collections import deque
+
+from helpers import (
+    ForgetfulMemory,
+    BasicQueue
+)
 
 
 class UcvSimpleActionPlan:
@@ -42,6 +48,9 @@ class UcvRobotPlanner:
         self._perception = perception
         self._bridge = CvBridge()
 
+        self._last_actions_memory = ForgetfulMemory(5)
+        self._next_actions_queue = BasicQueue()
+
         self._default_plan_secs = default_plan_timeslot_in_secs
 
         self._left_cam_line_reducer = r.define_line_reducer_on_point(
@@ -59,6 +68,24 @@ class UcvRobotPlanner:
         self._front_right_line_reducer = r.define_line_reducer_on_point(
             point=cons.FRONT_VISION_RIGHT_POINT
         )
+
+    @property
+    def _has_enqueued_actions(self):
+        return not self._next_actions_queue.empty()
+
+    def _memoize_action(self, action, only_non_zero=True):
+        """Add action to the memory. If `only_non_zero` is True then, an action
+        will onle be stored in the actions memory if it doesn't have it's vars with
+        the values to zero."""
+        if only_non_zero is True and action.x == 0 and action.theta == 0:
+            return
+        self._last_actions_memory.add(action)
+
+    def _resolve_enqueued_actions(self):
+        """Returns the next action in the queue, removing it from the structure."""
+        if not self._next_actions_queue.empty():
+            return seld._next_actions_queue.dequeue()
+        return UcvRobotPlanner(x=0, theta=0, secs=0)
 
     def _calculate_detected_lines(self, cam_state, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
         lines = None
@@ -78,9 +105,17 @@ class UcvRobotPlanner:
                 lines = reduce(reduce_fn, lines.reshape(-1, 4))
         return lines
 
+    def _theta_front_transfer_function(closest_front_left_line, closest_front_right_line):
+        (xl, yl), dl = closest_point(cons.FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
+        (xr, yr), dr = closest_point(cons.FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
+        return (np.pi / 2) * np.tanh((dl - dr) / point_distance(xl, yl, xr, yr))
+
     def plan(self, secs=None):
         """Analyse the information from the perception mechanisms
         and determine the best course of action to be taken by the robot."""
+        if self._has_enqueued_actions is True:
+            return self._resolve_enqueued_actions()
+
         if secs is None: secs = self._default_plan_secs
 
         ## Get Current Perceived States
@@ -168,12 +203,17 @@ class UcvRobotPlanner:
                 front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
                 image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
 
-            if closest_front_left_stake_line is not None and closest_front_right_stake_line is not None:
-                front_stake_lines = np.hstack((closest_front_left_stake_line, closest_front_right_stake_line))
-                image = v.draw_lines_on_image(image, front_stake_lines.reshape(-1, 4), (150, 10, 5))
+                theta = self._theta_front_transfer_function(closest_front_left_plant_line, closest_front_right_plant_line)
+                x = 0.1
 
-            cv2.imshow('camera', image)
-            cv2.waitKey(1)
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=x, theta=theta, secs=1))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=x, theta=-theta, secs=1))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0))
+                return self._resolve_enqueued_actions()
+
+            # cv2.imshow('camera', image)
+            # cv2.waitKey(1)
+
 
         #TODO: proccess the information and return the best control strategy
         return UcvSimpleActionPlan(x=0, theta=0, secs=0)
