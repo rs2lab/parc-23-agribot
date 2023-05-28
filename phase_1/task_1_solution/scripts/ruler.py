@@ -49,5 +49,5 @@ def theta_front_transfer_function(closest_front_left_line, closest_front_right_l
         (xl, yl), dl = closest_point(left_ref_point, closest_front_left_line.reshape(2, 2))
         (xr, yr), dr = closest_point(right_ref_point, closest_front_right_line.reshape(2, 2))
         dist_between = point_distance(xl, yl, xr, yr)
-        dist_between = np.log(dist_between) if dist_between > 1 else dist_between
+        dist_between = np.log(dist_between) if dist_between > np.e else dist_between
         return (np.pi / 2) * np.tanh(dist_between / (dl - dr))
