@@ -3,5 +3,5 @@ from robot_agent import UcvRobotAgent
 
 
 if __name__ == '__main__':
-    agent = UcvRobotAgent()
+    agent = UcvRobotAgent(debug=True)
     agent.run()
