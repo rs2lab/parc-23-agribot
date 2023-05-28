@@ -205,10 +205,10 @@ class UcvRobotPlanner:
 
                 secs = self._default_plan_secs if secs is None else secs
 
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=theta, secs=0))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=theta/10, secs=secs))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=-theta, secs=0))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.2, theta=0, secs=secs))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=-theta/10, secs=secs))
+                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0, secs=secs))
                 self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
                 return self._resolve_enqueued_actions()
 
