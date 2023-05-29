@@ -138,7 +138,7 @@ class UcvRobotPlanner:
 
         return lateral_theta
 
-    def _calculate_front_theta(seld, front_cam_state):
+    def _calculate_front_theta(self, front_cam_state):
         front_cam_plant_theta = r.front_shift_transfer_function(
             closest_front_left_line=self._detected_lines(
                 cam_state=front_cam_state,
