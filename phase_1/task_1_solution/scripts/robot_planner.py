@@ -100,8 +100,14 @@ class UcvRobotPlanner:
         return lines
 
     def _calculate_lateral_theta(self, left_cam_state, right_cam_state):
-        left_cam_image = v.imgmsg_to_cv2(left_cam_state)
-        right_cam_image = v.imgmsg_to_cv2(right_cam_state)
+        left_cam_image = None
+        right_cam_image = None
+
+        if left_cam_state is not None:
+            left_cam_image = v.imgmsg_to_cv2(left_cam_state)
+
+        if right_cam_state is not None:
+            right_cam_image = v.imgmsg_to_cv2(right_cam_state)
 
         lateral_plant_theta = r.lateral_shift_transfer_function(
             closest_left_line=self._detected_lines(
@@ -134,13 +140,17 @@ class UcvRobotPlanner:
         )
 
         lateral_theta = lateral_plant_theta + lateral_stake_theta
+
         if lateral_plant_theta != 0 and lateral_stake_theta != 0:
             lateral_theta = lateral_theta / 2
 
         return lateral_theta
 
     def _calculate_front_theta(self, front_cam_state):
-        front_cam_image = v.imgmsg_to_cv2(front_cam_state)
+        front_cam_image = None
+
+        if front_cam_state is not None:
+            front_cam_image = v.imgmsg_to_cv2(front_cam_state)
 
         front_plant_theta = r.front_shift_transfer_function(
             closest_front_left_line=self._detected_lines(
@@ -181,6 +191,7 @@ class UcvRobotPlanner:
         )
 
         front_theta = front_plant_theta + front_stake_theta
+
         if front_plant_theta != 0 and front_stake_theta != 0:
             front_theta = front_theta / 2
 
