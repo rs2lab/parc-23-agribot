@@ -184,31 +184,24 @@ class UcvRobotPlanner:
             mask=cons.FRONT_MASK_03,
         )
 
-        if current_front_cam_state is not None:
-            #frame = v.imgmsg_to_cv2(current_front_cam_state)
-            #image = frame
+        theta = r.lateral_shift_transfer_function(
+            closest_left_line=closest_left_plant_line,
+            closest_right_line=closest_right_plant_line,
+        ) + r.lateral_shift_transfer_function(
+            closest_left_line=closest_left_stake_line,
+            closest_right_line=closest_right_stake_line,
+        )
 
-            if closest_front_left_plant_line is not None and closest_front_right_plant_line is not None:
-                #front_plant_lines = np.hstack((closest_front_left_plant_line, closest_front_right_plant_line))
-                #image = v.draw_lines_on_image(image, front_plant_lines.reshape(-1, 4), (0, 10, 200))
-                #cv2.waitKey(1)
+        theta /= 2
 
-                theta = r.theta_front_transfer_function(
-                    closest_front_left_line=closest_front_left_plant_line,
-                    closest_front_right_line=closest_front_right_plant_line,
-                    left_ref_point=cons.FRONT_VISION_LEFT_POINT,
-                    right_ref_point=cons.FRONT_VISION_RIGHT_POINT,
-                )
+        secs = self._default_plan_secs if secs is None else secs
+        rate = self._control.rate.sleep_dur.nsecs / 10**9
 
-                secs = self._default_plan_secs if secs is None else secs
-                rate = self._control.rate.sleep_dur.nsecs / 10**9
-
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=theta * rate, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=-theta * rate, secs=secs))
-                self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
-                return self._resolve_enqueued_actions()
-
-        #TODO: proccess the information and return the best control strategy
-        return UcvSimpleActionPlan(x=0, theta=0, secs=0)
+        # self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=theta * rate, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=-theta * rate, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
+        return self._resolve_enqueued_actions()

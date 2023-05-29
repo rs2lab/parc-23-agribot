@@ -53,3 +53,22 @@ def theta_front_transfer_function(closest_front_left_line, closest_front_right_l
         if (denum := dl - dr) != 0:
             return (np.pi / 2) * np.tanh(num / (denum * 2))
         return 0
+
+
+def lateral_shift_transfer_function(closest_left_line, closest_right_line):
+    dl = None
+    dr = None
+
+    if closest_left_line is not None:
+        _, dl = closest_point(LATERAL_LEFT_VISION_POINT, closest_left_line.reshape(2, 2))
+    else:
+        dl = 1.1 * point_distance(LATERAL_LEFT_VISION_POINT[0], 0, *LATERAL_LEFT_VISION_POINT)
+
+    if closest_right_line is not None:
+        _, dr = closest_point(LATERAL_RIGHT_VISION_POINT, closest_right_line.reshape(2, 2))
+    else:
+        dr = 1.1 * point_distance(LATERAL_RIGHT_VISION_POINT[0], 480, *LATERAL_RIGHT_VISION_POINT)
+
+    if  (d := dl - dr) < -1 or d > 1:
+        return  (np.pi / 2) * np.tanh(np.sign(d) * 0.1 * np.log10(np.abs(d)))
+    return 0
