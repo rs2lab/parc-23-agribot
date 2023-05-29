@@ -219,12 +219,12 @@ class UcvRobotPlanner:
         secs = self._default_plan_secs if secs is None else secs
         rate = self._control.rate.sleep_dur.nsecs / 10**9
 
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.9, theta=theta * rate, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.15, theta=theta * rate, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.125, theta=0.0, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=-theta * rate, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.2, theta=0.0, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
         return self._resolve_enqueued_actions()
