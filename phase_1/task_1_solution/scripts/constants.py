@@ -9,8 +9,8 @@ DEFAULT_SEG_CRT = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
 
 DARK_AREA_CROP_YY_THRESH = 325
 
-#NOTE: remember to remove this also from the lateral points
-# xx when searching for the closest line.
+# NOTE: remember to use the cropped version of
+# lateral points when cropping the lateral images
 LATERAL_CROP_XX_THRESH = 60
 
 LATERAL_LEFT_VISION_POINT = np.array((320, 300))

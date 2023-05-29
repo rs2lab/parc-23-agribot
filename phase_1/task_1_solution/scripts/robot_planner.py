@@ -83,7 +83,7 @@ class UcvRobotPlanner:
             return self._next_actions_queue.dequeue()
         return UcvRobotPlanner(x=0, theta=0, secs=0)
 
-    def _calculate_detected_lines(self, cam_state, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
+    def _detected_lines(self, cam_state, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
         lines = None
         if cam_state is not None:
             image = v.imgmsg_to_cv2(cam_state)
@@ -101,6 +101,88 @@ class UcvRobotPlanner:
                 lines = reduce(reduce_fn, lines.reshape(-1, 4))
         return lines
 
+    def _calculate_lateral_theta(self, left_cam_state, right_cam_state):
+        left_cam_plant_theta = r.lateral_shift_transfer_function(
+            closest_left_line=self._detected_lines(
+                cam_state=current_left_cam_state,
+                crop_fn=v.crop_lateral_image,
+                detection_fn=v.detect_plants,
+                reduce_fn=self._left_cam_line_reducer,
+            ),
+            closest_right_line=self._detected_lines(
+                cam_state=current_right_cam_state,
+                crop_fn=v.crop_lateral_image,
+                detection_fn=v.detect_plants,
+                reduce_fn=self._right_cam_line_reducer,
+            ),
+        )
+
+        left_cam_stake_theta = r.lateral_shift_transfer_function(
+            closest_left_line=self._detected_lines(
+                cam_state=current_left_cam_state,
+                crop_fn=v.crop_lateral_image,
+                detection_fn=v.detect_stake,
+                reduce_fn=self._left_cam_line_reducer,
+            ),
+            closest_right_line=self._detected_lines(
+                cam_state=current_right_cam_state,
+                crop_fn=v.crop_lateral_image,
+                detection_fn=v.detect_stake,
+                reduce_fn=self._right_cam_line_reducer,
+            ),
+        )
+
+        lateral_theta = left_cam_plant_theta + left_cam_stake_theta
+        if left_cam_plant_theta != 0 and left_cam_stake_theta != 0:
+            lateral_theta = lateral_theta / 2
+
+        return lateral_theta
+
+    def _calculate_front_theta(seld, front_cam_state):
+        front_cam_plant_theta = r.front_shift_transfer_function(
+            closest_front_left_line=self._detected_lines(
+                cam_state=current_front_cam_state,
+                crop_fn=v.crop_front_image,
+                detection_fn=v.detect_plants,
+                reduce_fn=self._front_left_line_reducer,
+                mask_fn=v.mask_image,
+                mask=cons.FRONT_MASK_03,
+            ),
+            closest_front_right_line=self._detected_lines(
+                cam_state=current_front_cam_state,
+                crop_fn=v.crop_front_image,
+                detection_fn=v.detect_plants,
+                reduce_fn=self._front_right_line_reducer,
+                mask_fn=v.mask_image,
+                mask=cons.FRONT_MASK_03,
+            ),
+        )
+
+        front_cam_stake_theta = r.front_shift_transfer_function(
+            closest_front_left_line=self._detected_lines(
+                cam_state=current_front_cam_state,
+                crop_fn=v.crop_front_image,
+                detection_fn=v.detect_stake,
+                reduce_fn=self._front_left_line_reducer,
+                mask_fn=v.mask_image,
+                mask=cons.FRONT_MASK_03,
+            ),
+            closest_front_right_line=self._detected_lines(
+                cam_state=current_front_cam_state,
+                crop_fn=v.crop_front_image,
+                detection_fn=v.detect_stake,
+                reduce_fn=self._front_right_line_reducer,
+                mask_fn=v.mask_image,
+                mask=cons.FRONT_MASK_03,
+            ),
+        )
+
+        front_theta = front_cam_plant_theta + front_cam_stake_theta
+        if front_cam_plant_theta != 0 and front_cam_stake_theta != 0:
+            front_theta = front_theta / 2
+
+        return front_theta
+
     def plan(self, secs=None):
         """Analyse the information from the perception mechanisms
         and determine the best course of action to be taken by the robot."""
@@ -116,103 +198,11 @@ class UcvRobotPlanner:
         current_gps_state = self._perception.gps_state
         current_cmd_vel = self._perception.cmd_vel_state
 
-        ## Lateral Cams Line Detection
-
-        closest_left_stake_line = self._calculate_detected_lines(
-            cam_state=current_left_cam_state,
-            crop_fn=v.crop_lateral_image,
-            detection_fn=v.detect_stake,
-            reduce_fn=self._left_cam_line_reducer,
-        )
-
-        closest_left_plant_line = self._calculate_detected_lines(
-            cam_state=current_left_cam_state,
-            crop_fn=v.crop_lateral_image,
-            detection_fn=v.detect_plants,
-            reduce_fn=self._left_cam_line_reducer,
-        )
-
-        closest_right_stake_line = self._calculate_detected_lines(
-            cam_state=current_right_cam_state,
-            crop_fn=v.crop_lateral_image,
-            detection_fn=v.detect_stake,
-            reduce_fn=self._right_cam_line_reducer,
-        )
-
-        closest_right_plant_line = self._calculate_detected_lines(
-            cam_state=current_right_cam_state,
-            crop_fn=v.crop_lateral_image,
-            detection_fn=v.detect_plants,
-            reduce_fn=self._right_cam_line_reducer,
-        )
-
-        ## Front Cam Line Detection
-
-        closest_front_left_plant_line = self._calculate_detected_lines(
-            cam_state=current_front_cam_state,
-            crop_fn=v.crop_front_image,
-            detection_fn=v.detect_plants,
-            reduce_fn=self._front_left_line_reducer,
-            mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_03,
-        )
-
-        closest_front_left_stake_line = self._calculate_detected_lines(
-            cam_state=current_front_cam_state,
-            crop_fn=v.crop_front_image,
-            detection_fn=v.detect_stake,
-            reduce_fn=self._front_left_line_reducer,
-            mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_03,
-        )
-
-        closest_front_right_plant_line = self._calculate_detected_lines(
-            cam_state=current_front_cam_state,
-            crop_fn=v.crop_front_image,
-            detection_fn=v.detect_plants,
-            reduce_fn=self._front_right_line_reducer,
-            mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_03,
-        )
-
-        closest_front_right_stake_line = self._calculate_detected_lines(
-            cam_state=current_front_cam_state,
-            crop_fn=v.crop_front_image,
-            detection_fn=v.detect_stake,
-            reduce_fn=self._front_right_line_reducer,
-            mask_fn=v.mask_image,
-            mask=cons.FRONT_MASK_03,
-        )
-
-        left_cam_plant_th = r.lateral_shift_transfer_function(
-            closest_left_line=closest_left_plant_line,
-            closest_right_line=closest_right_plant_line,
-        )
-
-        left_cam_stake_th = r.lateral_shift_transfer_function(
-            closest_left_line=closest_left_stake_line,
-            closest_right_line=closest_right_stake_line,
-        )
-
-        lateral_theta = left_cam_plant_th + left_cam_stake_th
-        if left_cam_plant_th != 0 and left_cam_stake_th != 0:
-            lateral_theta = lateral_theta / 2
-
-        front_cam_plant_th = r.front_shift_transfer_function(
-            closest_front_left_line=closest_front_left_plant_line,
-            closest_front_right_line=closest_front_right_plant_line,
-        )
-
-        front_cam_stake_th = r.front_shift_transfer_function(
-            closest_front_left_line=closest_front_left_stake_line,
-            closest_front_right_line=closest_front_right_stake_line,
-        )
-
-        front_theta = front_cam_plant_th + front_cam_stake_th
-        if front_cam_plant_th != 0 and front_cam_stake_th != 0:
-            front_theta = front_theta / 2
+        lateral_theta = self._calculate_lateral_theta(current_left_cam_state, current_right_cam_state)
+        front_theta = self._calculate_front_theta(current_front_cam_state)
 
         theta = lateral_theta + front_theta
+
         if lateral_theta != 0 and front_theta != 0:
             theta = lateral_theta * 0.65 + front_theta * 0.35
 
@@ -227,4 +217,5 @@ class UcvRobotPlanner:
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
+
         return self._resolve_enqueued_actions()
