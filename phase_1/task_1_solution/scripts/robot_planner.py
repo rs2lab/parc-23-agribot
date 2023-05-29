@@ -190,17 +190,15 @@ class UcvRobotPlanner:
         if self._has_enqueued_actions is True:
             return self._resolve_enqueued_actions()
 
-        ## Get Current Perceived States
+        front_cam_state = self._perception.front_camera_state
+        left_cam_state = self._perception.left_camera_state
+        right_cam_state = self._perception.right_camera_state
+        scanner_state = self._perception.laser_scan_state
+        gps_state = self._perception.gps_state
+        cmd_vel = self._perception.cmd_vel_state
 
-        current_front_cam_state = self._perception.front_camera_state
-        current_left_cam_state = self._perception.left_camera_state
-        current_right_cam_state = self._perception.right_camera_state
-        current_scanner_state = self._perception.laser_scan_state
-        current_gps_state = self._perception.gps_state
-        current_cmd_vel = self._perception.cmd_vel_state
-
-        lateral_theta = self._calculate_lateral_theta(current_left_cam_state, current_right_cam_state)
-        front_theta = self._calculate_front_theta(current_front_cam_state)
+        lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
+        front_theta = self._calculate_front_theta(front_cam_state)
 
         theta = lateral_theta + front_theta
 
