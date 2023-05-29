@@ -16,8 +16,7 @@ from helpers import (
 
 
 class UcvSimpleActionPlan:
-    def __init__(self, x, theta, secs=0, debug=False):
-        self.debug = debug
+    def __init__(self, x, theta, secs=0):
         self.secs = secs
         self.theta = theta
         self.x = x
@@ -105,20 +104,20 @@ class UcvRobotPlanner:
 
         if left_cam_state is not None:
             left_cam_image = v.imgmsg_to_cv2(left_cam_state)
+            left_cam_image = v.crop_lateral_image(left_cam_image)
 
         if right_cam_state is not None:
             right_cam_image = v.imgmsg_to_cv2(right_cam_state)
+            right_cam_image = v.crop_lateral_image(right_cam_image)
 
         lateral_plant_theta = r.lateral_shift_transfer_function(
             closest_left_line=self._detected_lines(
                 left_cam_image,
-                crop_fn=v.crop_lateral_image,
                 detection_fn=v.detect_plants,
                 reduce_fn=self._left_cam_line_reducer,
             ),
             closest_right_line=self._detected_lines(
                 right_cam_image,
-                crop_fn=v.crop_lateral_image,
                 detection_fn=v.detect_plants,
                 reduce_fn=self._right_cam_line_reducer,
             ),
@@ -127,13 +126,11 @@ class UcvRobotPlanner:
         lateral_stake_theta = r.lateral_shift_transfer_function(
             closest_left_line=self._detected_lines(
                 left_cam_image,
-                crop_fn=v.crop_lateral_image,
                 detection_fn=v.detect_stake,
                 reduce_fn=self._left_cam_line_reducer,
             ),
             closest_right_line=self._detected_lines(
                 right_cam_image,
-                crop_fn=v.crop_lateral_image,
                 detection_fn=v.detect_stake,
                 reduce_fn=self._right_cam_line_reducer,
             ),
@@ -151,42 +148,32 @@ class UcvRobotPlanner:
 
         if front_cam_state is not None:
             front_cam_image = v.imgmsg_to_cv2(front_cam_state)
+            front_cam_image = v.crop_front_image(front_cam_image)
+            front_cam_image = v.mask_image(front_cam_image, mask=cons.FRONT_MASK_03)
 
         front_plant_theta = r.front_shift_transfer_function(
             closest_front_left_line=self._detected_lines(
                 front_cam_image,
-                crop_fn=v.crop_front_image,
                 detection_fn=v.detect_plants,
                 reduce_fn=self._front_left_line_reducer,
-                mask_fn=v.mask_image,
-                mask=cons.FRONT_MASK_03,
             ),
             closest_front_right_line=self._detected_lines(
                 front_cam_image,
-                crop_fn=v.crop_front_image,
                 detection_fn=v.detect_plants,
                 reduce_fn=self._front_right_line_reducer,
-                mask_fn=v.mask_image,
-                mask=cons.FRONT_MASK_03,
             ),
         )
 
         front_stake_theta = r.front_shift_transfer_function(
             closest_front_left_line=self._detected_lines(
                 front_cam_image,
-                crop_fn=v.crop_front_image,
                 detection_fn=v.detect_stake,
                 reduce_fn=self._front_left_line_reducer,
-                mask_fn=v.mask_image,
-                mask=cons.FRONT_MASK_03,
             ),
             closest_front_right_line=self._detected_lines(
                 front_cam_image,
-                crop_fn=v.crop_front_image,
                 detection_fn=v.detect_stake,
                 reduce_fn=self._front_right_line_reducer,
-                mask_fn=v.mask_image,
-                mask=cons.FRONT_MASK_03,
             ),
         )
 
@@ -231,5 +218,8 @@ class UcvRobotPlanner:
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
+
+        # XXX: if the position keeps almost the same after making a movement, move backward and
+        # then continue forward again after that.
 
         return self._resolve_enqueued_actions()
