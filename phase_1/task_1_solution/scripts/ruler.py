@@ -3,6 +3,8 @@ import numpy as np
 from constants import (
     FRONT_VISION_LEFT_POINT,
     FRONT_VISION_RIGHT_POINT,
+    LATERAL_LEFT_VISION_POINT,
+    LATERAL_RIGHT_VISION_POINT,
 )
 
 
@@ -43,13 +45,13 @@ def define_line_reducer_on_point(point):
     return reducer
 
 
-def theta_front_transfer_function(closest_front_left_line, closest_front_right_line,
-            left_ref_point=FRONT_VISION_LEFT_POINT, right_ref_point=FRONT_VISION_RIGHT_POINT):
-        # -- skip this line --
-        (xl, yl), dl = closest_point(left_ref_point, closest_front_left_line.reshape(2, 2))
-        (xr, yr), dr = closest_point(right_ref_point, closest_front_right_line.reshape(2, 2))
+def theta_front_transfer_function(closest_front_left_line, closest_front_right_line):
+        (xl, yl), dl = closest_point(FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
+        (xr, yr), dr = closest_point(FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
+
         num = point_distance(xl, yl, xr, xr)
         num = np.log(num) if num > np.e else num
+
         if (denum := dl - dr) != 0:
             return (np.pi / 2) * np.tanh(num / (denum * 2))
         return 0
