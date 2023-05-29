@@ -219,5 +219,8 @@ class UcvRobotPlanner:
 
         # XXX: if the position keeps almost the same after making a movement, move backward and
         # then continue forward again after that.
+        if self.debug:
+            gps_pos = (gps_state.latitude, gps_state.longitude, gps_state.altitude)
+            rospy.loginfo('Current Position: (LAT, LONG, ALTI) = ({}, {}, {})'.format(*gps_pos))
 
         return self._resolve_enqueued_actions()
