@@ -184,21 +184,37 @@ class UcvRobotPlanner:
             mask=cons.FRONT_MASK_03,
         )
 
-        plant_tt = r.lateral_shift_transfer_function(
+        left_cam_plant_th = r.lateral_shift_transfer_function(
             closest_left_line=closest_left_plant_line,
             closest_right_line=closest_right_plant_line,
         )
 
-        stake_tt = r.lateral_shift_transfer_function(
+        left_cam_stake_th = r.lateral_shift_transfer_function(
             closest_left_line=closest_left_stake_line,
             closest_right_line=closest_right_stake_line,
         )
 
-        theta = 0
-        if plant_tt != 0 and stake_tt != 0:
-            theta = (plant_tt + stake_tt) / 2
-        else:
-            theta = plant_tt + stake_tt
+        lateral_theta = left_cam_plant_th + left_cam_stake_th
+        if left_cam_plant_th != 0 and left_cam_stake_th != 0:
+            lateral_theta = lateral_theta / 2
+
+        front_cam_plant_th = r.front_shift_transfer_function(
+            closest_front_left_line=closest_front_left_plant_line,
+            closest_front_right_line=closest_front_right_plant_line,
+        )
+
+        front_cam_stake_th = r.front_shift_transfer_function(
+            closest_front_left_line=closest_front_left_stake_line,
+            closest_front_right_line=closest_front_right_stake_line,
+        )
+
+        front_theta = front_cam_plant_th + front_cam_stake_th
+        if front_cam_plant_th != 0 and front_cam_stake_th != 0:
+            front_theta = front_theta / 2
+
+        theta = lateral_theta + front_theta
+        if lateral_theta != 0 and front_theta != 0:
+            theta = lateral_theta * 0.65 + front_theta * 0.35
 
         secs = self._default_plan_secs if secs is None else secs
         rate = self._control.rate.sleep_dur.nsecs / 10**9
