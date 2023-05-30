@@ -207,6 +207,12 @@ class UcvRobotPlanner:
         if lateral_theta != 0 and front_theta != 0:
             theta = lateral_theta * 0.65 + front_theta * 0.35
 
+        # This is the angle in the oposite direction to adjust
+        # the robot after applying a theta angular rotation.
+        abs_theta = np.abs(theta)
+        zz = abs_theta ** 2.5 if abs_theta < 1 else abs_theta / 16
+        alpha = -theta + np.sign(theta) * zz
+
         secs = self._default_plan_secs if secs is None else secs
         rate = self._control.rate.sleep_dur.nsecs / 10**9
 
@@ -214,14 +220,14 @@ class UcvRobotPlanner:
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.125, theta=0.0, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=-theta * rate, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=alpha * rate, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.1, theta=0.0, secs=secs))
+        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.175, theta=0.0, secs=secs))
         self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
 
         # XXX: if the position keeps almost the same after making a movement, move backward and
         # then continue forward again after that.
-        if self.debug:
+        if self.debug and gps_state is not None:
             gps_pos = (gps_state.latitude, gps_state.longitude, gps_state.altitude)
             rospy.loginfo('Current Position: (LAT, LONG, ALTI) = ({}, {}, {})'.format(*gps_pos))
 
