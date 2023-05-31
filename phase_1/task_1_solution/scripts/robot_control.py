@@ -41,7 +41,7 @@ class UcvRobotControl:
 
     def publish_cmd_vel_by_steps(self, twist, steps):
         """This will garantee that a command will be executes on `steps` times."""
-        for e in steps:
+        for e in range(steps):
             if self.debug is True:
                 rospy.loginfo(
                     'Publishing cmd vel: x = %f, z = %f, step = %d / %d'
@@ -77,7 +77,7 @@ class UcvRobotControl:
 
     def execute_plan(self, plan):
         """Execute a given plan."""
-        if isintance(plan, UcvTemporalActionPlan):
+        if isinstance(plan, UcvTemporalActionPlan):
             self.publish_cmd_vel(plan.to_twist(), secs=plan.secs)
-        elif isintance(plan, UcvSteppedActionPlan):
+        elif isinstance(plan, UcvSteppedActionPlan):
             self.publish_cmd_vel_by_steps(plan.to_twist(), steps=plan.steps)
