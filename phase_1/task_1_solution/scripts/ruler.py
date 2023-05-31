@@ -83,6 +83,14 @@ def lateral_shift_transfer_function(closest_left_line, closest_right_line):
     else:
         dr = 1.15 * point_distance(CROPPED_LATERAL_RIGHT_VISION_POINT[0], 480, *CROPPED_LATERAL_RIGHT_VISION_POINT)
 
-    if  (d := dl - dr) < -1 or d > 1:
+    if  np.abs(d := dl - dr) > 1:
         return  (np.pi / 2) * np.tanh(np.sign(d) * 0.1 * np.log10(np.abs(d)))
     return 0
+
+
+def alpha_theta(theta):
+    """Returns the angle in the oposite direction of theta that will be used
+    to adjust the route after applying a theta angular rotation."""
+    abs = np.abs(theta)
+    countervalue = abs ** 2.5 if abs < 1 else abs / 16
+    return -theta + np.sign(theta) * countervalue
