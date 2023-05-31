@@ -3,6 +3,11 @@ import time
 
 from geometry_msgs.msg import Twist
 
+from robot_planner import (
+    UcvTemporalActionPlan,
+    UcvSteppedActionPlan,
+)
+
 
 class UcvRobotControl:
     def __init__(self, publishing_rate_in_hz = 10, debug=False):
@@ -34,6 +39,17 @@ class UcvRobotControl:
                 break
             self.rate.sleep()
 
+    def publish_cmd_vel_by_steps(self, twist, steps):
+        """This will garantee that a command will be executes on `steps` times."""
+        for e in steps:
+            if self.debug is True:
+                rospy.loginfo(
+                    'Publishing cmd vel: x = %f, z = %f, step = %d / %d'
+                    % (twist.linear.x, twist.angular.z, e, steps)
+                )
+            self._cmd_vel_pub.publish(twist)
+            self.rate.sleep()
+
     def stop(self):
         """Sets all variables responsible for the movement of the
         robot to zero"""
@@ -61,4 +77,7 @@ class UcvRobotControl:
 
     def execute_plan(self, plan):
         """Execute a given plan."""
-        self.publish_cmd_vel(plan.to_twist(), plan.secs)
+        if isintance(plan, UcvTemporalActionPlan):
+            self.publish_cmd_vel(plan.to_twist(), secs=plan.secs)
+        elif isintance(plan, UcvSteppedActionPlan):
+            self.publish_cmd_vel_by_steps(plan.to_twist(), steps=plan.steps)

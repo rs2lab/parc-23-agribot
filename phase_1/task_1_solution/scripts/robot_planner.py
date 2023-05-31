@@ -15,11 +15,18 @@ from helpers import (
 )
 
 
-class UcvSimpleActionPlan:
-    def __init__(self, x, theta, secs=0):
-        self.secs = secs
-        self.theta = theta
-        self.x = x
+class UcvActionPlan:
+    def __init__(self, x, theta):
+        self._x = x
+        self._theta = theta
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def theta(self):
+        return self._theta
 
     def to_twist(self):
         twist = Twist()
@@ -27,12 +34,40 @@ class UcvSimpleActionPlan:
         twist.angular.z = self.theta
         return twist
 
+
+class UcvTemporalActionPlan(UcvActionPlan):
+    def __init__(self, x, theta, secs=0):
+        super().__init__(x, theta)
+        self._secs = secs
+
+    @property
+    def secs(self):
+        return self._secs
+
     @classmethod
     def from_twist(cls, twist, secs=0):
-        return UcvSimpleActionPlan(
+        return UcvTemporalActionPlan(
             theta=twist.angular.z,
             x=twist.linear.x,
             secs=secs,
+        )
+
+
+class UcvSteppedActionPlan(UcvActionPlan):
+    def __init__(self, x, theta, steps=1):
+        super().__init__(x, theta)
+        self._steps = steps
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @classmethod
+    def from_twist(cls, twist, steps=1):
+        return UcvTemporalActionPlan(
+            theta=twist.angular.z,
+            x=twist.linear.x,
+            steps=steps,
         )
 
 
@@ -213,17 +248,17 @@ class UcvRobotPlanner:
         zz = abs_theta ** 2.5 if abs_theta < 1 else abs_theta / 16
         alpha = -theta + np.sign(theta) * zz
 
-        secs = self._default_plan_secs if secs is None else secs
-        rate = self._control.rate.sleep_dur.nsecs / 10**9
+        # secs = self._default_plan_secs if secs is None else secs
+        # rate = self._control.rate.sleep_dur.nsecs / 10**9
 
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.15, theta=theta * rate, secs=secs))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.125, theta=0.0, secs=secs))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=0.0, secs=0))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.0, theta=alpha * rate, secs=secs))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0.175, theta=0.0, secs=secs))
-        self._next_actions_queue.enqueue(UcvSimpleActionPlan(x=0, theta=0, secs=0))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.125, theta=0.0, steps=10))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=alpha * 0.1, steps=10))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0, theta=0, steps=1))
 
         # XXX: if the position keeps almost the same after making a movement, move backward and
         # then continue forward again after that.
