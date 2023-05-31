@@ -237,11 +237,7 @@ class UcvRobotPlanner:
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)
 
-        theta = lateral_theta + front_theta
-
-        if lateral_theta != 0 and front_theta != 0:
-            theta = lateral_theta * 0.65 + front_theta * 0.35
-
+        theta = r.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta)
         alpha = r.alpha_theta(theta)
 
         self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))

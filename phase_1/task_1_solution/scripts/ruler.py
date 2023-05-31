@@ -88,6 +88,17 @@ def lateral_shift_transfer_function(closest_left_line, closest_right_line):
     return 0
 
 
+def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, front_weight = 0.35):
+    """Sums the different theta values according to a given weight for each theta"""
+    theta = 0
+
+    if lateral_theta != 0 and front_theta != 0:
+        theta = lateral_theta * lateral_weight + front_theta * front_weight
+    else:
+        theta = lateral_theta + front_theta
+
+    return theta
+
 def alpha_theta(theta):
     """Returns the angle in the oposite direction of theta that will be used
     to adjust the route after applying a theta angular rotation."""
