@@ -1,3 +1,7 @@
+"""Local library containing metrics algorithms used to measure the environment and
+determine the best course of action based on these metrics.
+"""
+
 import numpy as np
 
 from constants import (

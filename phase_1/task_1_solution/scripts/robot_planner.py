@@ -1,13 +1,17 @@
 import rospy
-import cv2
-
-import numpy as np
-import vision as v
-import constants as cons
-import ruler as r
+import vision
+import ruler
 
 from geometry_msgs.msg import Twist
 from functools import reduce
+
+from constants import (
+    CROPPED_LATERAL_LEFT_VISION_POINT,
+    CROPPED_LATERAL_RIGHT_VISION_POINT,
+    FRONT_VISION_LEFT_POINT,
+    FRONT_VISION_RIGHT_POINT,
+    FRONT_MASK_03,
+)
 
 from helpers import (
     ForgetfulMemory,
@@ -83,20 +87,20 @@ class UcvRobotPlanner:
 
         self._default_plan_secs = default_plan_timeslot_in_secs
 
-        self._left_cam_line_reducer = r.define_line_reducer_on_point(
-            point=cons.CROPPED_LATERAL_LEFT_VISION_POINT,
+        self._left_cam_line_reducer = ruler.define_line_reducer_on_point(
+            point=CROPPED_LATERAL_LEFT_VISION_POINT,
         )
 
-        self._right_cam_line_reducer = r.define_line_reducer_on_point(
-            point=cons.CROPPED_LATERAL_RIGHT_VISION_POINT,
+        self._right_cam_line_reducer = ruler.define_line_reducer_on_point(
+            point=CROPPED_LATERAL_RIGHT_VISION_POINT,
         )
 
-        self._front_left_line_reducer = r.define_line_reducer_on_point(
-            point=cons.FRONT_VISION_LEFT_POINT
+        self._front_left_line_reducer = ruler.define_line_reducer_on_point(
+            point=FRONT_VISION_LEFT_POINT
         )
 
-        self._front_right_line_reducer = r.define_line_reducer_on_point(
-            point=cons.FRONT_VISION_RIGHT_POINT
+        self._front_right_line_reducer = ruler.define_line_reducer_on_point(
+            point=FRONT_VISION_RIGHT_POINT
         )
 
     @property
@@ -117,7 +121,7 @@ class UcvRobotPlanner:
             planned_action = self._next_actions_queue.dequeue()
             self._memoize_action(planned_action, only_non_zero=True)
             return planned_action
-        return UcvRobotPlanner(x=0, theta=0, secs=0)
+        return UcvSteppedActionPlan(x=0, theta=0, steps=0)
 
     def _detect_lines(self, image, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
         lines = None
@@ -129,7 +133,7 @@ class UcvRobotPlanner:
                 image = mask_fn(image, mask=mask)
 
             image = detection_fn(image, image_is_hsv=False)
-            lines = v.hough_lines(image, image_is_canny=False)
+            lines = vision.hough_lines(image, image_is_canny=False)
 
             if lines is not None and reduce_fn is not None:
                 lines = reduce(reduce_fn, lines.reshape(-1, 4))
@@ -140,35 +144,35 @@ class UcvRobotPlanner:
         right_cam_image = None
 
         if left_cam_state is not None:
-            left_cam_image = v.imgmsg_to_cv2(left_cam_state)
-            left_cam_image = v.crop_lateral_image(left_cam_image)
+            left_cam_image = vision.imgmsg_to_cv2(left_cam_state)
+            left_cam_image = vision.crop_lateral_image(left_cam_image)
 
         if right_cam_state is not None:
-            right_cam_image = v.imgmsg_to_cv2(right_cam_state)
-            right_cam_image = v.crop_lateral_image(right_cam_image)
+            right_cam_image = vision.imgmsg_to_cv2(right_cam_state)
+            right_cam_image = vision.crop_lateral_image(right_cam_image)
 
-        lateral_plant_theta = r.lateral_shift_transfer_function(
+        lateral_plant_theta = ruler.lateral_shift_transfer_function(
             closest_left_line=self._detect_lines(
                 left_cam_image,
-                detection_fn=v.detect_plants,
+                detection_fn=vision.detect_plants,
                 reduce_fn=self._left_cam_line_reducer,
             ),
             closest_right_line=self._detect_lines(
                 right_cam_image,
-                detection_fn=v.detect_plants,
+                detection_fn=vision.detect_plants,
                 reduce_fn=self._right_cam_line_reducer,
             ),
         )
 
-        lateral_stake_theta = r.lateral_shift_transfer_function(
+        lateral_stake_theta = ruler.lateral_shift_transfer_function(
             closest_left_line=self._detect_lines(
                 left_cam_image,
-                detection_fn=v.detect_stake,
+                detection_fn=vision.detect_stake,
                 reduce_fn=self._left_cam_line_reducer,
             ),
             closest_right_line=self._detect_lines(
                 right_cam_image,
-                detection_fn=v.detect_stake,
+                detection_fn=vision.detect_stake,
                 reduce_fn=self._right_cam_line_reducer,
             ),
         )
@@ -184,32 +188,32 @@ class UcvRobotPlanner:
         front_cam_image = None
 
         if front_cam_state is not None:
-            front_cam_image = v.imgmsg_to_cv2(front_cam_state)
-            front_cam_image = v.crop_front_image(front_cam_image)
-            front_cam_image = v.mask_image(front_cam_image, mask=cons.FRONT_MASK_03)
+            front_cam_image = vision.imgmsg_to_cv2(front_cam_state)
+            front_cam_image = vision.crop_front_image(front_cam_image)
+            front_cam_image = vision.mask_image(front_cam_image, mask=FRONT_MASK_03)
 
-        front_plant_theta = r.front_shift_transfer_function(
+        front_plant_theta = ruler.front_shift_transfer_function(
             closest_front_left_line=self._detect_lines(
                 front_cam_image,
-                detection_fn=v.detect_plants,
+                detection_fn=vision.detect_plants,
                 reduce_fn=self._front_left_line_reducer,
             ),
             closest_front_right_line=self._detect_lines(
                 front_cam_image,
-                detection_fn=v.detect_plants,
+                detection_fn=vision.detect_plants,
                 reduce_fn=self._front_right_line_reducer,
             ),
         )
 
-        front_stake_theta = r.front_shift_transfer_function(
+        front_stake_theta = ruler.front_shift_transfer_function(
             closest_front_left_line=self._detect_lines(
                 front_cam_image,
-                detection_fn=v.detect_stake,
+                detection_fn=vision.detect_stake,
                 reduce_fn=self._front_left_line_reducer,
             ),
             closest_front_right_line=self._detect_lines(
                 front_cam_image,
-                detection_fn=v.detect_stake,
+                detection_fn=vision.detect_stake,
                 reduce_fn=self._front_right_line_reducer,
             ),
         )
@@ -237,17 +241,17 @@ class UcvRobotPlanner:
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)
 
-        theta = r.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta)
-        alpha = r.alpha_theta(theta)
+        theta = ruler.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta)
+        alpha = ruler.alpha_theta(theta)
 
         self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))
         self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.125, theta=0.0, steps=10))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
         self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=alpha * 0.1, steps=10))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
         # TODO: if the position keeps almost the same after making a movement, move backward and
         # then continue forward again after that.

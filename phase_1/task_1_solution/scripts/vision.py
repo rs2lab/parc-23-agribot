@@ -1,8 +1,15 @@
+"""Local library containing computer vision algorithms used in this module."""
+
 import cv2
 import numpy as np
 
-from constants import *
 from cv_bridge import CvBridge
+
+from constants import (
+    DEFAULT_SEG_CRT,
+    DARK_AREA_CROP_YY_THRESH,
+    LATERAL_CROP_XX_THRESH,
+)
 
 
 _BRIDGE_OBJ = CvBridge()

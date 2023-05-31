@@ -45,7 +45,7 @@ class UcvRobotControl:
             if self.debug is True:
                 rospy.loginfo(
                     'Publishing cmd vel: x = %f, z = %f, step = %d / %d'
-                    % (twist.linear.x, twist.angular.z, e, steps)
+                    % (twist.linear.x, twist.angular.z, e + 1, steps)
                 )
             self._cmd_vel_pub.publish(twist)
             self.rate.sleep()
