@@ -112,7 +112,7 @@ def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, fro
 def alpha_theta(theta):
     """Returns the angle in the oposite direction of theta that will be used
     to adjust the route after applying a theta angular rotation."""
-    abs = np.abs(theta)
+    #abs = np.abs(theta)
     #countervalue = abs ** 2.5 if abs < 1 else abs / 16
     #return -theta + np.sign(theta) * countervalue
     return -theta / 8 

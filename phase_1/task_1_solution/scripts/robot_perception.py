@@ -191,7 +191,7 @@ class UcvRobotPerception:
         return self._goal_state
 
     @property
-    def intialpose_state(self):
+    def initialpose_state(self):
         """Returns `geometry_msgs.msg.PoseWithCovarianceStamped`
 
         Attributes:
