@@ -51,11 +51,13 @@ class UcvRobotPerception:
         self._peg_A_pos = None
         self._peg_B_pos = None
 
+        self._route = None
+
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
             UcvSensorType.CAM_RIGHT: [],
             UcvSensorType.CAM_FRONT: [],
-            UcvSensorType.GPS: [],
+            UcvSensorType.GPS: [self._capture_route_number],
             UcvSensorType.LASER_SCAN: [],
             UcvSensorType.CMD_VEL: [],
         }
@@ -295,7 +297,7 @@ class UcvRobotPerception:
         self._cmd_vel_state = data
         self._trigger_callbacks(UcvSensorType.CMD_VEL, data)
 
-    def _dist_to_peg_line(self, peg_a, peg_b):
+    def dist_to_peg_line(self, peg_a, peg_b):
         dist = None
         if self.gps_state is not None and peg_a is not None and peg_b is not None:
             robot_pos = np.array((self.gps_state.latitude, self.gps_state.longitude))
@@ -304,37 +306,64 @@ class UcvRobotPerception:
         return dist
 
     def dist_to_peg_line_1(self):
-        return self._dist_to_peg_line(
+        return self.dist_to_peg_line(
             peg_a=self.peg_1_pos,
             peg_b=self.peg_4_pos,
         )
 
     def dist_to_peg_line_2(self):
-        return self._dist_to_peg_line(
+        return self.dist_to_peg_line(
             peg_a=self.peg_2_pos,
             peg_b=self.peg_3_pos,
         )
 
     def dist_to_peg_line_3(self):
-        return self._dist_to_peg_line(
+        return self.dist_to_peg_line(
             peg_a=self.peg_3_pos,
             peg_b=self.peg_6_pos,
         )
 
     def dist_to_peg_line_4(self):
-        return self._dist_to_peg_line(
+        return self.dist_to_peg_line(
             peg_a=self.peg_4_pos,
             peg_b=self.peg_5_pos,
         )
 
     def dist_to_peg_line_5(self):
-        return self._dist_to_peg_line(
+        return self.dist_to_peg_line(
             peg_a=self.peg_6_pos,
             peg_b=self.peg_7_pos,
         )
 
     def dist_to_peg_line_6(self):
-        return self._dist_to_peg_line(
+        return self.dist_to_peg_line(
             peg_a=self.peg_5_pos,
             peg_b=self.peg_8_pos,
         )
+
+    def route(self):
+        """Returns the number of the route the robot will have to follow.
+        It can be 1, 2, or 3.
+        """
+        return self._route
+
+    def _capture_route_number(self):
+        dl_1 = self.dist_to_peg_line_1()
+        dl_5 = self.dist_to_peg_line_5()
+        dl_6 = self.dist_to_peg_line_6()
+
+        route_num = None
+        if dl_1 is not None and dl_5 is not None and dl_6 is not None:
+            min_dist = min(dl_1, dl_5, dl_6)
+            if min_dist == dl_1:
+                route_num = 1
+            elif min_dist == dl_5:
+                route_num = 2
+            elif min_dist == dl_6:
+                route_num == 3
+
+        if route_num is not None:
+            self._route = route_num
+            # remove callback, not needed anymore
+            self._state_update_callback_registry[UcvSensorType.GPS]
+                .remove(self._capture_route_number)

@@ -103,6 +103,9 @@ class UcvRobotPlanner:
             point=FRONT_VISION_RIGHT_POINT
         )
 
+        self._passed_line_1 = False
+        self._line_1_switch = None
+
     @property
     def _has_enqueued_actions(self):
         return not self._next_actions_queue.empty()
@@ -267,5 +270,8 @@ class UcvRobotPlanner:
             masked_laser_values = ruler.mask_laser_scan(laser_ranges)
             closest_point_dist = np.min(masked_laser_values)
             rospy.loginfo(f'Closest Laser point dist = {closest_point_dist}')
+
+        if self.debug and (route := self._perception.route) is not None:
+            rospy.loginfo(f'Route is {route}')
 
         return self._resolve_enqueued_actions()
