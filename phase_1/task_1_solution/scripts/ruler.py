@@ -68,28 +68,34 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
         num = point_distance(xl, yl, xr, yr)
         num = np.log(num) if num > np.e else num
 
-        if (denum := dl - dr) != 0:
+        if np.abs(denum := dl - dr) > 1:
             return (np.pi / 2) * np.tanh(num / (denum * 1.75))
         return 0
 
 
 def lateral_shift_transfer_function(closest_left_line, closest_right_line):
-    dl = None
-    dr = None
+    (xl, yl), dl = (None, None), None
+    (xr, yr), dr = (None, None), None
 
     if closest_left_line is not None:
-        _, dl = closest_point(CROPPED_LATERAL_LEFT_VISION_POINT, closest_left_line.reshape(2, 2))
+        (xl, yl), dl = closest_point(CROPPED_LATERAL_LEFT_VISION_POINT, closest_left_line.reshape(2, 2))
     else:
         dl = 1.15 * point_distance(CROPPED_LATERAL_LEFT_VISION_POINT[0], 0, *CROPPED_LATERAL_LEFT_VISION_POINT)
 
     if closest_right_line is not None:
-        _, dr = closest_point(CROPPED_LATERAL_RIGHT_VISION_POINT, closest_right_line.reshape(2, 2))
+        (xr, yr), dr = closest_point(CROPPED_LATERAL_RIGHT_VISION_POINT, closest_right_line.reshape(2, 2))
     else:
         dr = 1.15 * point_distance(CROPPED_LATERAL_RIGHT_VISION_POINT[0], 480, *CROPPED_LATERAL_RIGHT_VISION_POINT)
 
+    result = 0
     if  np.abs(d := dl - dr) > 1:
-        return  (np.pi / 2) * np.tanh(np.sign(d) * 0.1 * np.log10(np.abs(d)))
-    return 0
+        result = (np.pi / 2) * np.tanh(np.sign(d) * 0.1 * np.log10(np.abs(d)))
+
+    #if (closest_left_line is None and xr is not None and xr < CROPPED_LATERAL_RIGHT_VISION_POINT[0] - 80) or \
+    #        (closest_right_line is None and xl is not None and xl < CROPPED_LATERAL_LEFT_VISION_POINT[0] - 80):
+    #    result /= 4
+
+    return result
 
 
 def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, front_weight = 0.35):
@@ -107,5 +113,6 @@ def alpha_theta(theta):
     """Returns the angle in the oposite direction of theta that will be used
     to adjust the route after applying a theta angular rotation."""
     abs = np.abs(theta)
-    countervalue = abs ** 2.5 if abs < 1 else abs / 16
-    return -theta + np.sign(theta) * countervalue
+    #countervalue = abs ** 2.5 if abs < 1 else abs / 16
+    #return -theta + np.sign(theta) * countervalue
+    return -theta / 8 

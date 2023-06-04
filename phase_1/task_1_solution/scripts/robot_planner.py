@@ -177,10 +177,10 @@ class UcvRobotPlanner:
             ),
         )
 
-        lateral_theta = lateral_plant_theta + lateral_stake_theta
+        lateral_theta = lateral_plant_theta # + lateral_stake_theta
 
         if lateral_plant_theta != 0 and lateral_stake_theta != 0:
-            lateral_theta = lateral_theta / 2
+            lateral_theta = lateral_plant_theta * 0.65 + lateral_stake_theta * 0.35
 
         return lateral_theta
 
@@ -218,10 +218,10 @@ class UcvRobotPlanner:
             ),
         )
 
-        front_theta = front_plant_theta + front_stake_theta
+        front_theta = front_plant_theta # + front_stake_theta
 
         if front_plant_theta != 0 and front_stake_theta != 0:
-            front_theta = front_theta / 2
+            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.2 
 
         return front_theta
 
