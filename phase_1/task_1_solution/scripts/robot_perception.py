@@ -13,6 +13,8 @@ from geometry_msgs.msg import (
     PoseStamped,
 )
 
+from helpers import SimpleGeoPos
+
 
 class UcvSensorType(enum.Enum):
     CAM_LEFT = '/left_camera/image_raw'
@@ -21,8 +23,6 @@ class UcvSensorType(enum.Enum):
     LASER_SCAN = '/scan'
     GPS = '/gps/fix'
     CMD_VEL = '/cmd_vel'
-    GOAL = '/move_base_simple/goal'
-    INITIAL_POSE = '/intialpose'
 
 
 class UcvRobotPerception:
@@ -35,10 +35,8 @@ class UcvRobotPerception:
         self._gps_state = None
         self._laser_scan_state = None
         self._cmd_vel_state = None
-        self._initialpose_state = None
-        self._goal_state = None
 
-        self._first_gps_state = None
+        self._goal_pos = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -57,8 +55,6 @@ class UcvRobotPerception:
         rospy.Subscriber(UcvSensorType.GPS.value, NavSatFix, self._gps_state_update_handler)
         rospy.Subscriber(UcvSensorType.LASER_SCAN.value, LaserScan, self._laser_scan_state_update_handler)
         rospy.Subscriber(UcvSensorType.CMD_VEL.value, Twist, self._cmd_vel_state_update_handler)
-        rospy.Subscriber(UcvSensorType.INITIAL_POSE.value, PoseWithCovarianceStamped, self._initialpose_state_update_handler)
-        rospy.Subscriber(UcvSensorType.GOAL.value, PoseStamped, self._goal_state_update_handler)
 
     def register_state_update_callback(self, sensor_type, callback):
         """Add a callback that will be called when the state of a sensor is updated."""
@@ -189,41 +185,16 @@ class UcvRobotPerception:
         return self._cmd_vel_state
 
     @property
-    def goal_state(self):
-        """Returns `geometry_msgs.msg.PoseStamped`
+    def goal_pos(self):
+        if self._goal_pos is not None:
+            return self._goal_pos
 
-        Attributes:
-            - header.seq: uint32
-            - header.time: stamp
-            - header.frame_id: string
-            - pose.position.x: float64
-            - pose.position.y: float64
-            - pose.position.z: float64
-            - pose.orientation.x: float64
-            - pose.orientation.y: float64
-            - pose.orientation.z: float64
-            - pose.orientation.w: float64
-        """
-        return self._goal_state
+        self._goal_pos = SimpleGeoPos(
+            latitude=rospy.get_param('goal_latitude'),
+            longitude=rospy.get_param('goal_longitude'),
+        )
 
-    @property
-    def initialpose_state(self):
-        """Returns `geometry_msgs.msg.PoseWithCovarianceStamped`
-
-        Attributes:
-            - header.seq: uint32
-            - header.time: stamp
-            - header.frame_id: string
-            - pose.pose.position.x: float64
-            - pose.pose.position.y: float64
-            - pose.pose.position.z: float64
-            - pose.pose.orientation.x: float64
-            - pose.pose.orientation.y: float64
-            - pose.pose.orientation.z: float64
-            - pose.pose.orientation.w: float64
-            - pose.convariance: float64[0..36]
-        """
-        return self._initialpose_state
+        return self._goal_pos
 
     def _left_camera_state_update_handler(self, data):
         self._left_camera_state = data
@@ -250,11 +221,3 @@ class UcvRobotPerception:
     def _cmd_vel_state_update_handler(self, data):
         self._cmd_vel_state = data
         self._trigger_callbacks(UcvSensorType.CMD_VEL, data)
-
-    def _initialpose_state_update_handler(self, data):
-        self._initialpose_state = data
-        self._trigger_callbacks(UcvSensorType.INITIAL_POSE, data)
-
-    def _goal_state_update_handler(self, data):
-        self._goal_state = data
-        self._trigger_callbacks(UcvSensorType.GOAL, data)

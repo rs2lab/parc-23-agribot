@@ -1,5 +1,5 @@
 from collections import deque
-from functools import lru_cache
+
 
 class ForgetfulMemory:
     def __init__(self, memory_size = 5):
@@ -43,3 +43,17 @@ class BasicQueue(deque):
         if not self.empty():
             return self[0]
         return None
+
+
+class SimpleGeoPos:
+    def __init__(self, latitude, longitude):
+        self._latitude = latitude
+        self._longitude = longitude
+
+    @property
+    def latitude(self):
+        return self._latitude
+
+    @property
+    def longitude(self):
+        return self._longitude
