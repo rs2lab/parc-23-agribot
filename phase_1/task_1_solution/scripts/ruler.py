@@ -31,7 +31,7 @@ def closest_point(point, other_points):
         x1, y1 = other_point
         d = point_distance(x0, y0, x1, y1)
         if result is None or d < result[-1]:
-            result = [np.array((x1, y1)), d]
+            result = (np.array((x1, y1)), d)
     return result
 
 

@@ -241,8 +241,6 @@ class UcvRobotPlanner:
         scanner_state = self._perception.laser_scan_state
         gps_state = self._perception.gps_state
         cmd_vel = self._perception.cmd_vel_state
-        goal_pos = self._perception.goal_state
-        initialpose = self._perception.initialpose_state
 
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)

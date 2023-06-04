@@ -38,6 +38,8 @@ class UcvRobotPerception:
         self._initialpose_state = None
         self._goal_state = None
 
+        self._first_gps_state = None
+
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
             UcvSensorType.CAM_RIGHT: [],
@@ -72,6 +74,20 @@ class UcvRobotPerception:
                 rospy.loginfo(f'Calling {len(callbacks)} callbacks for {sensor_type.value} sensor state update')
             for callback in callbacks:
                 callback(data)
+
+    @property
+    def first_gps_state(self):
+        """The first captured gps state. Returns `sensor_msgs.msg.NavSatFix`
+
+        Attributes:
+            - header.seq: uint32
+            - header.stamp: time
+            - header.frame_id: string
+            - latitude: float64
+            - longitude: float64
+            - altitude: float64
+        """
+        return self._first_gps_state
 
     @property
     def left_camera_state(self):
@@ -223,6 +239,8 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
+        if self._first_gps_state is None:
+            self._first_gps_state = self._gps_state
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
