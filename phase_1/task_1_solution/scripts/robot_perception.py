@@ -13,7 +13,7 @@ from geometry_msgs.msg import (
     PoseStamped,
 )
 
-from helpers import SimpleGeoPos
+from helpers import BasicGeoPos
 
 
 class UcvSensorType(enum.Enum):
@@ -37,6 +37,16 @@ class UcvRobotPerception:
         self._cmd_vel_state = None
 
         self._goal_pos = None
+        self._peg_1_pos = None
+        self._peg_2_pos = None
+        self._peg_3_pos = None
+        self._peg_4_pos = None
+        self._peg_5_pos = None
+        self._peg_6_pos = None
+        self._peg_7_pos = None
+        self._peg_8_pos = None
+        self._peg_A_pos = None
+        self._peg_B_pos = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -186,15 +196,79 @@ class UcvRobotPerception:
 
     @property
     def goal_pos(self):
-        if self._goal_pos is not None:
-            return self._goal_pos
+        if self._goal_pos is None:
+            self._goal_pos = BasicGeoPos(
+                latitude=rospy.get_param('goal_latitude'),
+                longitude=rospy.get_param('goal_longitude'),
+            )
+        return self._goal_pos
 
-        self._goal_pos = SimpleGeoPos(
-            latitude=rospy.get_param('goal_latitude'),
-            longitude=rospy.get_param('goal_longitude'),
+    def _get_peg_pos(self, idf):
+        return BasicGeoPos(
+            latitude=rospy.get_param('/peg_%d/latitude' % idf),
+            longitude=rospy.get_param('/peg_%d/longitude' % idf),
         )
 
-        return self._goal_pos
+    @property
+    def peg_1_pos(self):
+        if self._peg_1_pos is None:
+            self._peg_1_pos = self._get_peg_pos('01')
+        return self._peg_1_pos
+
+    @property
+    def peg_2_pos(self):
+        if self._peg_2_pos is None:
+            self._peg_2_pos = self._get_peg_pos('02')
+        return self._peg_2_pos
+
+    @property
+    def peg_3_pos(self):
+        if self._peg_3_pos is None:
+            self._peg_3_pos = self._get_peg_pos('03')
+        return self._peg_3_pos
+
+    @property
+    def peg_4_pos(self):
+        if self._peg_4_pos is None:
+            self._peg_4_pos = self._get_peg_pos('04')
+        return self._peg_4_pos
+
+
+    @property
+    def peg_5_pos(self):
+        if self._peg_5_pos is None:
+            self._peg_5_pos = self._get_peg_pos('05')
+        return self._peg_5_pos
+
+    @property
+    def peg_6_pos(self):
+        if self._peg_6_pos is None:
+            self._peg_6_pos = self._get_peg_pos('06')
+        return self._peg_6_pos
+
+    @property
+    def peg_7_pos(self):
+        if self._peg_7_pos is None:
+            self._peg_7_pos = self._get_peg_pos('07')
+        return self._peg_7_pos
+
+    @property
+    def peg_8_pos(self):
+        if self._peg_8_pos is None:
+            self._peg_8_pos = self._get_peg_pos('08')
+        return self._peg_8_pos
+
+    @property
+    def peg_A_pos(self):
+        if self._peg_A_pos is None:
+            self._peg_A_pos = self._get_peg_pos('A')
+        return self._peg_A_pos
+
+    @property
+    def peg_B_pos(self):
+        if self._peg_B_pos is None:
+            self._peg_B_pos = self._get_peg_pos('B')
+        return self._peg_B_pos
 
     def _left_camera_state_update_handler(self, data):
         self._left_camera_state = data

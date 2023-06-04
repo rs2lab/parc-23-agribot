@@ -45,7 +45,7 @@ class BasicQueue(deque):
         return None
 
 
-class SimpleGeoPos:
+class BasicGeoPos:
     def __init__(self, latitude, longitude):
         self._latitude = latitude
         self._longitude = longitude
@@ -57,3 +57,13 @@ class SimpleGeoPos:
     @property
     def longitude(self):
         return self._longitude
+
+    @property
+    def lat(self):
+        """Alias for latitude."""
+        return self.latitude
+
+    @property
+    def lon(self):
+        """Alias for longitude."""
+        return self.longitude
