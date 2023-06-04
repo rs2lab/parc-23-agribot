@@ -262,4 +262,10 @@ class UcvRobotPlanner:
             gps_pos = (gps_state.latitude, gps_state.longitude, gps_state.altitude)
             rospy.loginfo('Current Position: (LAT, LONG, ALTI) = ({}, {}, {})'.format(*gps_pos))
 
+        if self.debug and laser_scan_state is not None:
+            laser_ranges = np.array(laser_scan_state.ranges)
+            masked_laser_values = ruler.mask_laser_scan(laser_ranges)
+            closest_point_dist = np.min(masked_laser_values)
+            rospy.loginfo(f'Closest Laser point dist = {closest_point_dist}')
+
         return self._resolve_enqueued_actions()

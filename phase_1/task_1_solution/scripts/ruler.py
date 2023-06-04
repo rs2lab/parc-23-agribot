@@ -9,6 +9,7 @@ from constants import (
     FRONT_VISION_RIGHT_POINT,
     CROPPED_LATERAL_LEFT_VISION_POINT,
     CROPPED_LATERAL_RIGHT_VISION_POINT,
+    LASER_INTERESTING_RANGE,
 )
 
 
@@ -109,6 +110,7 @@ def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, fro
 
     return theta
 
+
 def alpha_theta(theta):
     """Returns the angle in the oposite direction of theta that will be used
     to adjust the route after applying a theta angular rotation."""
@@ -116,3 +118,10 @@ def alpha_theta(theta):
     #countervalue = abs ** 2.5 if abs < 1 else abs / 16
     #return -theta + np.sign(theta) * countervalue
     return -theta / 8
+
+
+def mask_laser_scan(value):
+    mask = np.ones(400)
+    mask[:LASER_INTERESTING_RANGE[0]] = float('inf')
+    mask[LASER_INTERESTING_RANGE[1]:] = float('inf')
+    return mask * value
