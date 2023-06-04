@@ -58,8 +58,6 @@ class UcvRobotPerception:
             UcvSensorType.GPS: [],
             UcvSensorType.LASER_SCAN: [],
             UcvSensorType.CMD_VEL: [],
-            UcvSensorType.INITIAL_POSE: [],
-            UcvSensorType.GOAL: [],
         }
 
         rospy.Subscriber(UcvSensorType.CAM_LEFT.value, Image, self._left_camera_state_update_handler)
@@ -208,8 +206,8 @@ class UcvRobotPerception:
 
     def _get_peg_pos(self, idf):
         return BasicGeoPos(
-            latitude=rospy.get_param('/peg_%d/latitude' % idf),
-            longitude=rospy.get_param('/peg_%d/longitude' % idf),
+            latitude=rospy.get_param('/peg_{}/latitude'.format(idf)),
+            longitude=rospy.get_param('/peg_{}/longitude'.format(idf)),
         )
 
     @property
@@ -287,8 +285,6 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
-        if self._first_gps_state is None:
-            self._first_gps_state = self._gps_state
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
