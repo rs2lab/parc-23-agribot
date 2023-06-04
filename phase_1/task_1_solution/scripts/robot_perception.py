@@ -1,5 +1,8 @@
 import rospy
 import enum
+import ruler
+
+import numpy as np
 
 from sensor_msgs.msg import (
     Image,
@@ -295,3 +298,47 @@ class UcvRobotPerception:
     def _cmd_vel_state_update_handler(self, data):
         self._cmd_vel_state = data
         self._trigger_callbacks(UcvSensorType.CMD_VEL, data)
+
+    def _dist_to_peg_line(self, peg_a, peg_b):
+        dist = None
+        if self.gps_state is not None and peg_a is not None and peg_b is not None:
+            robot_pos = np.array((self.gps_state.latitude, self.gps_state.longitude))
+            peg_line_pos = np.array((peg_a.lat, peg_a.lon, peg_b.lat, peg_b.lon))
+            dist = ruler.line_dist_to_point(peg_line_pos, robot_pos)
+        return dist
+
+    def dist_to_peg_line_1(self):
+        return self._dist_to_peg_line(
+            peg_a=self.peg_1_pos,
+            peg_b=self.peg_4_pos,
+        )
+
+    def dist_to_peg_line_2(self):
+        return self._dist_to_peg_line(
+            peg_a=self.peg_2_pos,
+            peg_b=self.peg_3_pos,
+        )
+
+    def dist_to_peg_line_3(self):
+        return self._dist_to_peg_line(
+            peg_a=self.peg_3_pos,
+            peg_b=self.peg_6_pos,
+        )
+
+    def dist_to_peg_line_4(self):
+        return self._dist_to_peg_line(
+            peg_a=self.peg_4_pos,
+            peg_b=self.peg_5_pos,
+        )
+
+    def dist_to_peg_line_5(self):
+        return self._dist_to_peg_line(
+            peg_a=self.peg_6_pos,
+            peg_b=self.peg_7_pos,
+        )
+
+    def dist_to_peg_line_6(self):
+        return self._dist_to_peg_line(
+            peg_a=self.peg_5_pos,
+            peg_b=self.peg_8_pos,
+        )
