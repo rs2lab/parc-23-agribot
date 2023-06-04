@@ -115,4 +115,4 @@ def alpha_theta(theta):
     #abs = np.abs(theta)
     #countervalue = abs ** 2.5 if abs < 1 else abs / 16
     #return -theta + np.sign(theta) * countervalue
-    return -theta / 8 
+    return -theta / 8

@@ -1,5 +1,4 @@
 from collections import deque
-from cv_bridge import CvBridge
 from functools import lru_cache
 
 class ForgetfulMemory:

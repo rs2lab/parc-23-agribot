@@ -123,6 +123,10 @@ class UcvRobotPlanner:
             return planned_action
         return UcvSteppedActionPlan(x=0, theta=0, steps=0)
 
+    def enqueue_action(self, action):
+        """Add a new action to the action queue."""
+        self._next_actions_queue.enqueue(action)
+
     def _detect_lines(self, image, *, detection_fn, reduce_fn=None, crop_fn=None, mask_fn=None, mask=None):
         lines = None
         if image is not None:
@@ -221,11 +225,11 @@ class UcvRobotPlanner:
         front_theta = front_plant_theta # + front_stake_theta
 
         if front_plant_theta != 0 and front_stake_theta != 0:
-            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.2 
+            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.2
 
         return front_theta
 
-    def plan(self, secs=None):
+    def plan(self):
         """Analyse the information from the perception mechanisms
         and determine the best course of action to be taken by the robot."""
         if self._has_enqueued_actions is True:
@@ -237,6 +241,8 @@ class UcvRobotPlanner:
         scanner_state = self._perception.laser_scan_state
         gps_state = self._perception.gps_state
         cmd_vel = self._perception.cmd_vel_state
+        goal_pos = self._perception.goal_state
+        initialpose = self._perception.initialpose_state
 
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)
@@ -244,14 +250,14 @@ class UcvRobotPlanner:
         theta = ruler.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta)
         alpha = ruler.alpha_theta(theta)
 
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=alpha * 0.1, steps=10))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
-        self._next_actions_queue.enqueue(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=alpha * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
         # TODO: if the position keeps almost the same after making a movement, move backward and
         # then continue forward again after that.
