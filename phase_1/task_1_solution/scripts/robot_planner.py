@@ -13,6 +13,7 @@ from constants import (
     FRONT_VISION_LEFT_POINT,
     FRONT_VISION_RIGHT_POINT,
     FRONT_MASK_03,
+    LASER_THETA
 )
 
 from helpers import (
@@ -254,7 +255,9 @@ class UcvRobotPlanner:
 
         if self.debug and laser_scan_state is not None:
             masked_laser_values = ruler.mask_laser_scan(np.array(laser_scan_state.ranges))
-            closest_point_dist = np.min(masked_laser_values)
-            rospy.loginfo(f'Closest Laser point dist = {closest_point_dist}')
+            closest_point_index = np.argmin(masked_laser_values)
+            theta = LASER_THETA[closest_point_index]
+            rho = masked_laser_values[closest_point_index]
+            rospy.loginfo(f'Closest laser point = ({rho}, {theta})')
 
         return self._resolve_enqueued_actions()
