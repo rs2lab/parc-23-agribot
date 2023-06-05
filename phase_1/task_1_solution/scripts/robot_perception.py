@@ -302,8 +302,8 @@ class UcvRobotPerception:
         dist = None
         if self.gps_state is not None and peg_a is not None and peg_b is not None:
             robot_pos = np.array((self.gps_state.latitude, self.gps_state.longitude))
-            peg_line_pos = np.array((peg_a.lat, peg_a.lon, peg_b.lat, peg_b.lon))
-            dist = ruler.line_dist_to_point(peg_line_pos, robot_pos)
+            mid_point = np.array((peg_a.lat + peg_b.lat, peg_a.lon + peg_b.lon)) / 2
+            dist = ruler.point_distance(*mid_point, *robot_pos)
         return dist
 
     def dist_to_peg_line_1(self):
