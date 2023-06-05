@@ -57,7 +57,7 @@ class UcvRobotPerception:
             UcvSensorType.CAM_LEFT: [],
             UcvSensorType.CAM_RIGHT: [],
             UcvSensorType.CAM_FRONT: [],
-            UcvSensorType.GPS: [self._capture_route_number],
+            UcvSensorType.GPS: [],
             UcvSensorType.LASER_SCAN: [],
             UcvSensorType.CMD_VEL: [],
         }
