@@ -226,8 +226,9 @@ class UcvRobotPlanner:
     def _move_forward(self, front_cam_state, left_cam_state, right_cam_state, laser_scan_state, gps_state, **kwargs):
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)
-        last_theta = self._last_actions_memory.last()
+        last_theta_alpha = self._last_actions_memory.last()
 
+        last_theta = last_theta_alpha[0] if last_theta_alpha is not None else None
         theta = ruler.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta, last_theta=last_theta)
         alpha = ruler.alpha_theta(theta, last_theta=last_theta)
 
