@@ -223,7 +223,7 @@ class UcvRobotPlanner:
 
         return front_theta
 
-    def _move_forward(self, front_cam_state, left_cam_state, right_cam_state, laser_state, gps_state, **kwargs):
+    def _move_forward(self, front_cam_state, left_cam_state, right_cam_state, laser_scan_state, gps_state, **kwargs):
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)
         last_theta = self._last_actions_memory.last()
@@ -267,7 +267,6 @@ class UcvRobotPlanner:
             gps_state = self._perception.gps_state,
         )
 
-        if (di := self._should_make_turn(**kwargs)) is not None:
-            return self._make_a_turn(di, **kwargs)
-
+        if (direction := self._should_make_turn(**kwargs)) is not None:
+            return self._make_a_turn(direction, **kwargs)
         return self._move_forward(**kwargs)
