@@ -23,3 +23,5 @@ FRONT_VISION_RIGHT_POINT = np.array((440, 324)) + (25, 0)
 LASER_INTERESTING_RANGE = (188 - 40, 212 + 40)
 
 LASER_THETA = np.arange(-np.pi / 2, np.pi / 2, np.pi / 400)
+
+LASER_RHO_THRESH = 6.5

@@ -10,6 +10,7 @@ from constants import (
     CROPPED_LATERAL_LEFT_VISION_POINT,
     CROPPED_LATERAL_RIGHT_VISION_POINT,
     LASER_INTERESTING_RANGE,
+    LASER_RHO_THRESH
 )
 
 
@@ -132,7 +133,7 @@ def laser_front_fillup_rate(values, mask_values=True):
         values = mask_laser_scan(values)
 
     poi = values[LASER_INTERESTING_RANGE[0]:LASER_INTERESTING_RANGE[1]].copy()
-    poi[poi > 6.2] = 0
+    poi[poi > LASER_RHO_THRESH] = 0
     poi[poi != 0] = 1
 
     return np.mean(poi)
