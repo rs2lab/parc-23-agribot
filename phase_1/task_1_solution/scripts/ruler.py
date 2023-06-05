@@ -133,6 +133,6 @@ def laser_front_fillup_rate(values, mask_values=True):
 
     poi = values[LASER_INTERESTING_RANGE[0]:LASER_INTERESTING_RANGE[1]].copy()
     poi[poi > 6.2] = 0
-    poi[poi <= 6.2] = 1
+    poi[poi != 0] = 1
 
     return np.mean(poi)
