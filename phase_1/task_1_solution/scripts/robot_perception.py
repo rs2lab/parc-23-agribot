@@ -51,7 +51,7 @@ class UcvRobotPerception:
         self._peg_A_pos = None
         self._peg_B_pos = None
 
-        self._perceived_route = None
+        self._possible_route = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -287,8 +287,8 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
-        if self._perceived_route is None:
-            self._perceived_route = self._capture_route_number()
+        if self._possible_route is None:
+            self.guess_route_number()
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
@@ -343,25 +343,26 @@ class UcvRobotPerception:
             peg_b=self.peg_8_pos,
         )
 
-    @property
-    def route_perceived(self):
+    def guess_route_number(self):
         """Returns the number of the route the robot will have to follow.
         It can be 1, 2, or 3.
         """
-        return self._perceived_route
+        if self._possible_route != None:
+            return self._possible_route
 
-    def _capture_route_number(self):
         dl_1 = self.dist_to_peg_line_1()
         dl_5 = self.dist_to_peg_line_5()
         dl_6 = self.dist_to_peg_line_6()
 
-        route_num = None
+        self._possible_route = None
         if dl_1 is not None and dl_5 is not None and dl_6 is not None:
             min_dist = min(dl_1, dl_5, dl_6)
             if min_dist == dl_1:
-                route_num = 1
+                self._possible_route = 1
             elif min_dist == dl_5:
-                route_num = 2
+                self._possible_route = 2
             elif min_dist == dl_6:
-                route_num == 3
-        return route_num
+                self._possible_route == 3
+
+        return self._possible_route
+

@@ -273,7 +273,7 @@ class UcvRobotPlanner:
             closest_point_dist = np.min(masked_laser_values)
             rospy.loginfo(f'Closest Laser point dist = {closest_point_dist}')
 
-        if self.debug and self._perception.route_perceived is not None:
-            rospy.loginfo(f'Route is {self._perception.route_perceived}')
+        if self.debug and (route := self._perception.guess_route_number()) is not None:
+            rospy.loginfo(f'Route is {route}')
 
         return self._resolve_enqueued_actions()
