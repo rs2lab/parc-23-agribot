@@ -362,15 +362,14 @@ class UcvRobotPerception:
         if dl_6 is None:
             dl_6 = float('inf')
 
-        min_dist = min(dl_1, dl_5, dl_6)
+        m = None
+        dists = (dl_1, dl_5, dl_6)
+        for i, val in enumerate(dists):
+            if val < float('inf') and (m is None or dists[m] > val):
+                m = i
 
-        if min_dist < float('inf'):
-            if min_dist == dl_1:
-                self._possible_route = 1
-            elif min_dist == dl_5:
-                self._possible_route = 2
-            elif min_dist == dl_6:
-                self._possible_route == 3
+        if m is not None:
+            self._possible_route = m + 1
 
         return self._possible_route
 
