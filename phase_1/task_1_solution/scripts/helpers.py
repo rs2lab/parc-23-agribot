@@ -1,10 +1,12 @@
+import numpy as np
+
 from collections import deque
 
 
 class ForgetfulMemory:
-    def __init__(self, memory_size = 5):
-        self._memory_size = memory_size
-        self._memory = deque([], memory_size)
+    def __init__(self, limit_size = None):
+        self._memory_size = limit_size
+        self._memory = deque([], limit_size)
 
     def empty(self):
         return len(self._memory) == 0
@@ -12,15 +14,15 @@ class ForgetfulMemory:
     def add(self, value):
         self._memory.append(value)
 
-    def last(self):
+    def last(self, n=1):
         if not self.empty():
-            return self._memory[-1]
+            return self._memory[-n:]
         return None
 
     def all(self):
         return list(self._memory)
 
-    def forget_all(self):
+    def clear(self):
         self._memory.clear()
 
 
@@ -67,3 +69,6 @@ class BasicGeoPos:
     def lon(self):
         """Alias for longitude."""
         return self.longitude
+
+    def to_array(self):
+        return np.array((self.lat, self.lon))

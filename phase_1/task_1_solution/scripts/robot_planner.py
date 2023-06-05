@@ -105,26 +105,14 @@ class UcvRobotPlanner:
             point=FRONT_VISION_RIGHT_POINT
         )
 
-        self._passed_line_1 = False
-        self._line_1_switch = None
-
     @property
     def _has_enqueued_actions(self):
         return not self._next_actions_queue.empty()
-
-    def _memoize_action(self, action, only_non_zero=True):
-        """Add action to the memory. If `only_non_zero` is True then, an action
-        will onle be stored in the actions memory if it doesn't have it's vars with
-        the values to zero."""
-        if only_non_zero is True and action.x == 0 and action.theta == 0:
-            return
-        self._last_actions_memory.add(action)
 
     def _resolve_enqueued_actions(self):
         """Returns the next action in the queue, removing it from the structure."""
         if not self._next_actions_queue.empty():
             planned_action = self._next_actions_queue.dequeue()
-            self._memoize_action(planned_action, only_non_zero=True)
             return planned_action
         return UcvSteppedActionPlan(x=0, theta=0, steps=0)
 
@@ -252,6 +240,19 @@ class UcvRobotPlanner:
         theta = ruler.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta)
         alpha = ruler.alpha_theta(theta)
 
+        self._last_actions_memory.add((theta, alpha))
+
+        # if the last 2 thetas were zero we are in the end of a line
+        if np.sum(self._last_actions_memory.last(2)) == 0:
+            # Turn
+            cum_sum = np.sum(self._last_actions_memory.all())
+            self.enqueue_action(UcvSteppedActionPlan(x=0, theta=-cum_sum * 0.1, steps=10))
+            self.enqueue_action(UcvSteppedActionPlan(x=0.05, theta=0, steps=5))
+            self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2))
+            self.enqueue_action(UcvSteppedActionPlan(x=0.12, theta=0, steps=10))
+            self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2))
+            self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
+
         self.enqueue_action(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
@@ -261,13 +262,12 @@ class UcvRobotPlanner:
         self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
-        # TODO: if the position keeps almost the same after making a movement, move backward and
-        # then continue forward again after that.
         if self.debug and gps_state is not None:
             gps_pos = (gps_state.latitude, gps_state.longitude, gps_state.altitude)
             rospy.loginfo('Current Position: (LAT, LONG, ALTI) = ({}, {}, {})'.format(*gps_pos))
 
         if self.debug and laser_scan_state is not None:
+            # TODO: get angle as well
             laser_ranges = np.array(laser_scan_state.ranges)
             masked_laser_values = ruler.mask_laser_scan(laser_ranges)
             closest_point_dist = np.min(masked_laser_values)
