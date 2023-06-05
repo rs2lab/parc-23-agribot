@@ -30,7 +30,7 @@ class UcvRobotControl:
         while secs == 0 or (sep := time.time() - now) < secs:
             if self.debug is True:
                 rospy.loginfo(
-                    'Publishing cmd vel: x = %f, z = %f, timelapse = %f s / %f s'
+                    'publishing cmd vel: linear.x = %f, anguler.z = %f, timelapse = %f s / %f s'
                     % (twist.linear.x, twist.angular.z, sep, secs)
                 )
 
@@ -44,7 +44,7 @@ class UcvRobotControl:
         for e in range(steps):
             if self.debug is True:
                 rospy.loginfo(
-                    'Publishing cmd vel: x = %f, z = %f, step = %d / %d'
+                    'publishing to cmd vel: linear.x = %f, angular.z = %f, step = %d / %d'
                     % (twist.linear.x, twist.angular.z, e + 1, steps)
                 )
             self._cmd_vel_pub.publish(twist)

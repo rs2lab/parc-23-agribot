@@ -245,14 +245,25 @@ class UcvRobotPlanner:
 
         return self._resolve_enqueued_actions()
 
-    def _should_make_turn(self, laser_scan_state, front_cam_state, left_cam_state, right_cam_state, **kwargs):
+    def _make_turn(self, laser_scan_state, front_cam_state, left_cam_state, right_cam_state, **kwargs):
         """Analyse the laser and other sensors to see if it should turn left or right.
         Returns `(rho, theta)` or `None`"""
-        # TODO: implement
-        return None
+        if laser_scan_state is not None:
+            laser_range = np.array(laser_scan_state.ranges)
+            masked_laser_range = ruler.mask_laser_scan(laser_range)
 
-    def _make_a_turn(self, direction, **kwargs):
-        pass # TODO: implement
+            lfr = ruler.laser_front_fillup_rate(masked_laser_range, mask_values=False)
+            rospy.loginfo('LFR = {}'.format(lfr))
+
+            if lfr > 0.5:
+                theta_dev = 0
+                if not self._last_actions_memory.empty():
+                    theta_dev = np.mean(self._last_actions_memory.all())
+                    rospy.loginfo('theta dev = {}'.format(theta_dev))
+                    self._last_actions_memory.clear()
+                # TODO: plan turn to the side
+                return UcvSteppedActionPlan(x=0, theta=-theta_dev * 0.1, steps=10) 
+        return None
 
     def plan(self):
         """Analyse the information from the perception mechanisms
@@ -268,6 +279,7 @@ class UcvRobotPlanner:
             gps_state = self._perception.gps_state,
         )
 
-        if (direction := self._should_make_turn(**kwargs)) is not None:
-            return self._make_a_turn(direction, **kwargs)
+        if (should_make_turn := self._make_turn(**kwargs)) is not None:
+            return should_make_turn
+
         return self._move_forward(**kwargs)
