@@ -125,3 +125,14 @@ def mask_laser_scan(value):
     mask[:LASER_INTERESTING_RANGE[0]] = float('inf')
     mask[LASER_INTERESTING_RANGE[1]:] = float('inf')
     return mask * value
+
+
+def laser_front_fillup_rate(values, mask_values=True):
+    if not mask_values:
+        values = mask_laser_scan(values)
+
+    poi = values[LASER_INTERESTING_RANGE[0]:LASER_INTERESTING_RANGE[1]]
+    poi[poi == float('inf')] = 0
+    poi[poi != float('inf')] = 1
+
+    return np.mean(poi)

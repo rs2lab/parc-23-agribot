@@ -259,5 +259,7 @@ class UcvRobotPlanner:
             theta = LASER_THETA[closest_point_index]
             rho = masked_laser_values[closest_point_index]
             rospy.loginfo(f'Closest laser point = ({rho}, {theta})')
+            fup = ruler.laser_front_fillup_rate(masked_laser_values, mask_values=False)
+            rospy.loginfo(f'Laser fillup rate = {fup}')
 
         return self._resolve_enqueued_actions()
