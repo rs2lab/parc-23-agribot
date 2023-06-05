@@ -100,7 +100,7 @@ def lateral_shift_transfer_function(closest_left_line, closest_right_line):
     return result
 
 
-def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, front_weight = 0.35):
+def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, front_weight = 0.35, last_theta=None):
     """Sums the different theta values according to a given weight for each theta"""
     theta = 0
 
@@ -108,6 +108,9 @@ def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, fro
         theta = lateral_theta * lateral_weight + front_theta * front_weight
     else:
         theta = lateral_theta + front_theta
+
+    if last_theta is not None:
+        theta -= last_theta / (4 * np.pi)
 
     return theta
 
