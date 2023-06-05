@@ -241,7 +241,7 @@ class UcvRobotPlanner:
         front_cam_state = self._perception.front_camera_state
         left_cam_state = self._perception.left_camera_state
         right_cam_state = self._perception.right_camera_state
-        scanner_state = self._perception.laser_scan_state
+        laser_scan_state = self._perception.laser_scan_state
         gps_state = self._perception.gps_state
 
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
@@ -271,7 +271,7 @@ class UcvRobotPlanner:
             closest_point_dist = np.min(masked_laser_values)
             rospy.loginfo(f'Closest Laser point dist = {closest_point_dist}')
 
-        if self.debug and (route := self._perception.route) is not None:
-            rospy.loginfo(f'Route is {route}')
+        if self.debug and self._perception.route_perceived is not None:
+            rospy.loginfo(f'Route is {self._perception.route_perceived}')
 
         return self._resolve_enqueued_actions()

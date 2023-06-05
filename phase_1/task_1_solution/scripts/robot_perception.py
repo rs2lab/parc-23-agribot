@@ -51,7 +51,7 @@ class UcvRobotPerception:
         self._peg_A_pos = None
         self._peg_B_pos = None
 
-        self._route = None
+        self._perceived_route = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -287,6 +287,8 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
+        if self._perceived_route is None:
+            self._perceived_route = self._capture_route_number()
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
@@ -341,11 +343,12 @@ class UcvRobotPerception:
             peg_b=self.peg_8_pos,
         )
 
-    def route(self):
+    @property
+    def route_perceived(self):
         """Returns the number of the route the robot will have to follow.
         It can be 1, 2, or 3.
         """
-        return self._route
+        return self._perceived_route
 
     def _capture_route_number(self):
         dl_1 = self.dist_to_peg_line_1()
@@ -361,9 +364,4 @@ class UcvRobotPerception:
                 route_num = 2
             elif min_dist == dl_6:
                 route_num == 3
-
-        if route_num is not None:
-            self._route = route_num
-            # remove callback, not needed anymore
-            self._state_update_callback_registry[UcvSensorType.GPS]
-                .remove(self._capture_route_number)
+        return route_num
