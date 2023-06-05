@@ -51,8 +51,6 @@ class UcvRobotPerception:
         self._peg_A_pos = None
         self._peg_B_pos = None
 
-        self._possible_route = None
-
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
             UcvSensorType.CAM_RIGHT: [],
@@ -286,8 +284,6 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
-        if self._possible_route is None:
-            self.guess_route_number()
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
@@ -341,35 +337,4 @@ class UcvRobotPerception:
             peg_a=self.peg_5_pos,
             peg_b=self.peg_8_pos,
         )
-
-    def guess_route_number(self):
-        """Returns the number of the route the robot will have to follow.
-        It can be 1, 2, or 3.
-        """
-        if self._possible_route is not None:
-            return self._possible_route
-
-        dl_1 = self.dist_to_peg_line_1()
-        dl_5 = self.dist_to_peg_line_5()
-        dl_6 = self.dist_to_peg_line_6()
-
-        if dl_1 is None:
-            dl_1 = float('inf')
-
-        if dl_5 is None:
-            dl_5 = float('inf')
-
-        if dl_6 is None:
-            dl_6 = float('inf')
-
-        m = None
-        dists = (dl_1, dl_5, dl_6)
-        for i, val in enumerate(dists):
-            if val < float('inf') and (m is None or dists[m] > val):
-                m = i
-
-        if m is not None:
-            self._possible_route = m + 1
-
-        return self._possible_route
 

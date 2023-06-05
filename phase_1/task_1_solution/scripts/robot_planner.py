@@ -242,17 +242,6 @@ class UcvRobotPlanner:
 
         self._last_actions_memory.add((theta, alpha))
 
-        # if the last 2 thetas were zero we are in the end of a line
-        #all_actions = self._last_actions_memory.all()
-        #if len(all_actions) > 5 and np.sum(all_actions[-2:]) == 0:
-        #   cum_sum = np.sum(all_actions)
-        #   self.enqueue_action(UcvSteppedActionPlan(x=0, theta=-cum_sum * 0.1, steps=10))
-        #   self.enqueue_action(UcvSteppedActionPlan(x=0.05, theta=0, steps=5))
-        #   self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2))
-        #   self.enqueue_action(UcvSteppedActionPlan(x=0.12, theta=0, steps=10))
-        #   self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2))
-        #   self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
-
         self.enqueue_action(UcvSteppedActionPlan(x=0.15, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
@@ -263,17 +252,11 @@ class UcvRobotPlanner:
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
         if self.debug and gps_state is not None:
-            gps_pos = (gps_state.latitude, gps_state.longitude, gps_state.altitude)
-            rospy.loginfo('Current Position: (LAT, LONG, ALTI) = ({}, {}, {})'.format(*gps_pos))
+            rospy.loginfo('Current Position: LAT = {}, LON = {}'.format(gps_state.latitude, gps_state.longitude))
 
         if self.debug and laser_scan_state is not None:
-            # TODO: get angle as well
-            laser_ranges = np.array(laser_scan_state.ranges)
-            masked_laser_values = ruler.mask_laser_scan(laser_ranges)
+            masked_laser_values = ruler.mask_laser_scan(np.array(laser_scan_state.ranges))
             closest_point_dist = np.min(masked_laser_values)
             rospy.loginfo(f'Closest Laser point dist = {closest_point_dist}')
-
-        if self.debug and (route := self._perception.guess_route_number()) is not None:
-            rospy.loginfo(f'Route is {route}')
 
         return self._resolve_enqueued_actions()
