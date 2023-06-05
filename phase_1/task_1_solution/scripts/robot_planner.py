@@ -248,7 +248,7 @@ class UcvRobotPlanner:
         self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         #self.enqueue_action(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
-        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        #self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
