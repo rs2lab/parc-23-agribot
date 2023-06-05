@@ -243,9 +243,9 @@ class UcvRobotPlanner:
         self._last_actions_memory.add((theta, alpha))
 
         # if the last 2 thetas were zero we are in the end of a line
-        if np.sum(self._last_actions_memory.last(2)) == 0:
-            # Turn
-            cum_sum = np.sum(self._last_actions_memory.all())
+        all_actions = self._last_actions_memory.all()
+        if np.sum(all_actions[-2:]) == 0:
+            cum_sum = np.sum(all_actions)
             self.enqueue_action(UcvSteppedActionPlan(x=0, theta=-cum_sum * 0.1, steps=10))
             self.enqueue_action(UcvSteppedActionPlan(x=0.05, theta=0, steps=5))
             self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2))

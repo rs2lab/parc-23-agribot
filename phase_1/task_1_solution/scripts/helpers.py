@@ -16,7 +16,7 @@ class ForgetfulMemory:
 
     def last(self, n=1):
         if not self.empty():
-            return self._memory[-n:]
+            return self._memory[-n]
         return None
 
     def all(self):
