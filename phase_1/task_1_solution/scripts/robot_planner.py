@@ -267,6 +267,7 @@ class UcvRobotPlanner:
                 self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=(np.pi / 2) * 0.1, steps=10))
+                return self._resolve_enqueued_actions()
         return None
 
     def plan(self):
