@@ -79,7 +79,7 @@ class UcvSteppedActionPlan(UcvActionPlan):
 
 
 class UcvRobotPlanner:
-    def __init__(self, control, perception, default_plan_timeslot_in_secs=1, debug=False):
+    def __init__(self, control, perception, debug=False):
         self.debug = debug
 
         self._control = control
@@ -87,8 +87,6 @@ class UcvRobotPlanner:
 
         self._last_actions_memory = ForgetfulMemory(5)
         self._next_actions_queue = BasicQueue()
-
-        self._default_plan_secs = default_plan_timeslot_in_secs
 
         self._left_cam_line_reducer = ruler.define_line_reducer_on_point(
             point=CROPPED_LATERAL_LEFT_VISION_POINT,
@@ -263,10 +261,10 @@ class UcvRobotPlanner:
 
                     self._last_actions_memory.clear()
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
-                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=(np.pi / 2) * 0.1, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
-                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=(np.pi / 2) * 0.1, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
                 return self._resolve_enqueued_actions()
         return None
 

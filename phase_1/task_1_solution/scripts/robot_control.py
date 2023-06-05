@@ -10,10 +10,10 @@ from robot_planner import (
 
 
 class UcvRobotControl:
-    def __init__(self, publishing_rate_in_hz = 10, debug=False):
+    def __init__(self, rate = 10, latch=False, queue_size=10, debug=False):
         self.debug = debug
-        self.rate = rospy.Rate(publishing_rate_in_hz)
-        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size = 10)
+        self.rate = rospy.Rate(rate)
+        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=queue_size, latch=latch)
 
     @property
     def cmd_vel_pub(self):

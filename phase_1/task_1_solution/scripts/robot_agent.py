@@ -17,11 +17,12 @@ class UcvRobotAgent:
             debug=False
         )
         self.control = UcvRobotControl(
-            publishing_rate_in_hz=10,
-            debug=self.debug
+            rate=10,
+            debug=self.debug,
+            latch=True,
+            queue_size=0,
         )
         self.planner = UcvRobotPlanner(
-            default_plan_timeslot_in_secs=1,
             perception=self.perception,
             control=self.control,
             debug=debug
