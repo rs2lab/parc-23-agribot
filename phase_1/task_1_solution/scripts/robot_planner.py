@@ -2,6 +2,8 @@ import rospy
 import vision
 import ruler
 
+import numpy as np
+
 from geometry_msgs.msg import Twist
 from functools import reduce
 
