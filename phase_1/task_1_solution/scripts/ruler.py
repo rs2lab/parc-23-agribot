@@ -112,13 +112,13 @@ def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, fro
     return theta
 
 
-def alpha_theta(theta):
+def alpha_theta(theta, last_theta=None):
     """Returns the angle in the oposite direction of theta that will be used
     to adjust the route after applying a theta angular rotation."""
-    #abs = np.abs(theta)
-    #countervalue = abs ** 2.5 if abs < 1 else abs / 16
-    #return -theta + np.sign(theta) * countervalue
-    return -theta / 8
+    trace = 0
+    if last_theta is not None:
+        trace = last_theta / (4 * np.pi)
+    return -theta / (2 * np.pi) + trace
 
 
 def mask_laser_scan(value):
