@@ -267,7 +267,7 @@ class UcvRobotPlanner:
             gps_state = self._perception.gps_state,
         )
 
-        if laser_scan_state is not None and (di := self._should_make_turn(**kwargs)) is not None:
+        if (di := self._should_make_turn(**kwargs)) is not None:
             return self._make_a_turn(di, **kwargs)
 
         return self._move_forward(**kwargs)
