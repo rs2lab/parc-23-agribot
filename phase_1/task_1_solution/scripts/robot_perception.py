@@ -236,7 +236,6 @@ class UcvRobotPerception:
             self._peg_4_pos = self._get_peg_pos('04')
         return self._peg_4_pos
 
-
     @property
     def peg_5_pos(self):
         if self._peg_5_pos is None:
@@ -347,16 +346,25 @@ class UcvRobotPerception:
         """Returns the number of the route the robot will have to follow.
         It can be 1, 2, or 3.
         """
-        if self._possible_route != None:
+        if self._possible_route is not None:
             return self._possible_route
 
         dl_1 = self.dist_to_peg_line_1()
         dl_5 = self.dist_to_peg_line_5()
         dl_6 = self.dist_to_peg_line_6()
 
-        self._possible_route = None
-        if dl_1 is not None and dl_5 is not None and dl_6 is not None:
-            min_dist = min(dl_1, dl_5, dl_6)
+        if dl_1 is None:
+            dl_1 = float('inf')
+
+        if dl_5 is None:
+            dl_5 = float('inf')
+
+        if dl_6 is None:
+            dl_6 = float('inf')
+
+        min_dist = min(dl_1, dl_5, dl_6)
+
+        if min_dist < float('inf'):
             if min_dist == dl_1:
                 self._possible_route = 1
             elif min_dist == dl_5:
