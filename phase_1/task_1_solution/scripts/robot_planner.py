@@ -253,16 +253,20 @@ class UcvRobotPlanner:
             masked_laser_range = ruler.mask_laser_scan(laser_range)
 
             lfr = ruler.laser_front_fillup_rate(masked_laser_range, mask_values=False)
-            rospy.loginfo('LFR = {}'.format(lfr))
+            rospy.logdebug('laser front fill rate = {}'.format(lfr))
 
             if lfr > 0.5:
-                theta_dev = 0
                 if not self._last_actions_memory.empty():
-                    theta_dev = np.mean(self._last_actions_memory.all())
-                    rospy.loginfo('theta dev = {}'.format(theta_dev))
+                    theta_dev = -np.mean(self._last_actions_memory.all())
+
+                    rospy.logdebug('applying theta dev recovery = {}'.format(theta_dev))
+
                     self._last_actions_memory.clear()
-                # TODO: plan turn to the side
-                return UcvSteppedActionPlan(x=0, theta=-theta_dev * 0.1, steps=10) 
+                    self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=(np.pi / 2) * 0.1, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=(np.pi / 2) * 0.1, steps=10))
         return None
 
     def plan(self):
