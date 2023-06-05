@@ -223,24 +223,12 @@ class UcvRobotPlanner:
 
         return front_theta
 
-    def plan(self):
-        """Analyse the information from the perception mechanisms
-        and determine the best course of action to be taken by the robot."""
-        if self._has_enqueued_actions is True:
-            return self._resolve_enqueued_actions()
-
-        front_cam_state = self._perception.front_camera_state
-        left_cam_state = self._perception.left_camera_state
-        right_cam_state = self._perception.right_camera_state
-        laser_scan_state = self._perception.laser_scan_state
-        gps_state = self._perception.gps_state
-
+    def _move_forward(self, front_cam_state, left_cam_state, right_cam_state, laser_state, gps_state, **kwargs):
         lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
         front_theta = self._calculate_front_theta(front_cam_state)
-
-        theta = ruler.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta)
-
         last_theta = self._last_actions_memory.last()
+
+        theta = ruler.theta_weighted_sum(lateral_theta=lateral_theta, front_theta=front_theta, last_theta=last_theta)
         alpha = ruler.alpha_theta(theta, last_theta=last_theta)
 
         self._last_actions_memory.add((theta, alpha))
@@ -254,16 +242,32 @@ class UcvRobotPlanner:
         self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
-        if self.debug and gps_state is not None:
-            rospy.loginfo('Current Position: LAT = {}, LON = {}'.format(gps_state.latitude, gps_state.longitude))
-
-        if self.debug and laser_scan_state is not None:
-            masked_laser_values = ruler.mask_laser_scan(np.array(laser_scan_state.ranges))
-            closest_point_index = np.argmin(masked_laser_values)
-            theta = LASER_THETA[closest_point_index]
-            rho = masked_laser_values[closest_point_index]
-            rospy.loginfo(f'Closest laser point = ({rho}, {theta})')
-            fup = ruler.laser_front_fillup_rate(masked_laser_values, mask_values=False)
-            rospy.loginfo(f'Laser fillup rate = {fup}')
-
         return self._resolve_enqueued_actions()
+
+    def _should_make_turn(self, laser_scan_state, front_cam_state, left_cam_state, right_cam_state, **kwargs):
+        """Analyse the laser and other sensors to see if it should turn left or right.
+        Returns `(rho, theta)` or `None`"""
+        # TODO: implement
+        return None
+
+    def _make_a_turn(self, direction, **kwargs):
+        pass # TODO: implement
+
+    def plan(self):
+        """Analyse the information from the perception mechanisms
+        and determine the best course of action to be taken by the robot."""
+        if self._has_enqueued_actions:
+            return self._resolve_enqueued_actions()
+
+        kwargs = dict(
+            front_cam_state = self._perception.front_camera_state,
+            left_cam_state = self._perception.left_camera_state,
+            right_cam_state = self._perception.right_camera_state,
+            laser_scan_state = self._perception.laser_scan_state,
+            gps_state = self._perception.gps_state,
+        )
+
+        if laser_scan_state is not None and (di := self._should_make_turn(**kwargs)) is not None:
+            return self._make_a_turn(di, **kwargs)
+
+        return self._move_forward(**kwargs)
