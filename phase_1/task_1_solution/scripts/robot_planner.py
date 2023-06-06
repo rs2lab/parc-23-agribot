@@ -177,7 +177,7 @@ class UcvRobotPlanner:
         lateral_theta = lateral_plant_theta # + lateral_stake_theta
 
         if lateral_plant_theta != 0 and lateral_stake_theta != 0:
-            lateral_theta = lateral_plant_theta * 0.65 + lateral_stake_theta * 0.35
+            lateral_theta = lateral_plant_theta * 0.7 + lateral_stake_theta * 0.3
 
         return lateral_theta
 
@@ -218,7 +218,7 @@ class UcvRobotPlanner:
         front_theta = front_plant_theta # + front_stake_theta
 
         if front_plant_theta != 0 and front_stake_theta != 0:
-            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.2
+            front_theta = front_plant_theta * 0.875 + front_stake_theta * 0.125
 
         return front_theta
 
@@ -226,7 +226,7 @@ class UcvRobotPlanner:
         """laser_fill_rate_in_the_view_angle""" # TODO: update docstring
         if laser_scan_state is not None:
             laser_range = np.array(laser_scan_state.ranges)
-            return ruler.laser_front_fillup_rate(masked_laser_range, mask_values=True)
+            return ruler.laser_front_fillup_rate(laser_range, mask_values=True)
         return None
 
     def _move_forward(self, front_theta, lateral_theta, **kwargs):
@@ -292,7 +292,7 @@ class UcvRobotPlanner:
         )
 
         kwargs['front_theta'] = self._calculate_front_theta(kwargs['front_cam_state'])
-        kwargs['laser_front_view_fill_rate'] = self._calculate_lrf(kwargs['laser_scan_state'])
+        kwargs['laser_front_view_fill_rate'] = self._calculate_lfr(kwargs['laser_scan_state'])
 
         if (turn := self._make_turn(**kwargs)) is not None:
             return turn
