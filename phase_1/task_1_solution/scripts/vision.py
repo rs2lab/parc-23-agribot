@@ -66,6 +66,17 @@ def detect_stake(image, lower_adjust = -10, upper_adjust = 10, image_is_hsv = Fa
     )
 
 
+def detect_goal(image, lower_adjust = -10, upper_adjust = 10, image_is_hsv=False):
+    if not image_is_hsv:
+        image = convert_image_to_hsv(image)
+    return detect_color_profile(
+        image=image,
+        lower_bound=np.array((0, 250, 230)) + (0, lower_adjust, lower_adjust),
+        upper_bound=np.array((3, 255, 234)) + upper_adjust,
+        blur_image=False,
+    )
+
+
 def convert_image_to_hsv(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HSV_FULL)
 
