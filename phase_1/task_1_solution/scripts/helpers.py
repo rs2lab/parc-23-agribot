@@ -1,6 +1,13 @@
+import enum
+
 import numpy as np
 
 from collections import deque
+
+
+class RotationType(enum.Enum):
+    ANTICLOCKWISE = 1
+    CLOCKWISE = -1
 
 
 class ForgetfulMemory:
@@ -72,3 +79,10 @@ class BasicGeoPos:
 
     def to_array(self):
         return np.array((self.lat, self.lon))
+
+    def sub(self, pos):
+        """Return the subtraction of this position by the given `pos`"""
+        return BasicGeoPos(
+            latitude=self.lat - pos.lat,
+            longitude=self.lon - pos.lon,
+        )

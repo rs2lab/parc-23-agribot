@@ -1,5 +1,5 @@
-import rospy
 import enum
+import rospy
 import ruler
 
 import numpy as np
@@ -16,7 +16,10 @@ from geometry_msgs.msg import (
     PoseStamped,
 )
 
-from helpers import BasicGeoPos
+from helpers import (
+    BasicGeoPos,
+    RotationType,
+)
 
 
 class UcvSensorType(enum.Enum):
@@ -41,6 +44,8 @@ class UcvRobotPerception:
 
         self._goal_pos = None
         self._initial_pos = None
+
+        self._first_row_rotation = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -225,3 +230,13 @@ class UcvRobotPerception:
     def _cmd_vel_state_update_handler(self, data):
         self._cmd_vel_state = data
         self._trigger_callbacks(UcvSensorType.CMD_VEL, data)
+
+    def guess_first_rotation_direction(self):
+        """Returns the type of the rotation for the first row."""
+        if self._first_row_rotation is None:
+            diff = self.goal_pos.sub(self.initial_pos)
+            if (diff.lat < 0 and diff.lon > 0) or (diff.lat > 0 and diff.lon < 0):
+                self._first_row_rotation = RotationType.ANTICLOCKWISE
+            else:
+                self._first_row_rotation = RotationType.CLOCKWISE
+        return self._first_row_rotation

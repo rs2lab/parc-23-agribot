@@ -18,7 +18,8 @@ from constants import (
 
 from helpers import (
     ForgetfulMemory,
-    BasicQueue
+    BasicQueue,
+    RotationType,
 )
 
 
@@ -261,11 +262,13 @@ class UcvRobotPlanner:
                     self._last_actions_memory.clear()
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
 
+                direction = self._perception.guess_first_rotation_direction()
+                side = 'left' if direction == RotationType.ANTICLOCKWISE else 'right'
+                rospy.loginfo(f'Time to make a turn to the {side} side!')
                 # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
                 # self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
                 # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
                 # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
-                rospy.loginfo('Time to make a turn')
                 return self._resolve_enqueued_actions()
         return None
 
