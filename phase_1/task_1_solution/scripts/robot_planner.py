@@ -221,9 +221,14 @@ class UcvRobotPlanner:
 
         return front_theta
 
-    def _move_forward(self, front_cam_state, left_cam_state, right_cam_state, laser_scan_state, gps_state, **kwargs):
-        lateral_theta = self._calculate_lateral_theta(left_cam_state, right_cam_state)
-        front_theta = self._calculate_front_theta(front_cam_state)
+    def _calculate_lfr(self, laser_scan_state):
+        """laser_fill_rate_in_the_view_angle""" # TODO: update docstring
+        if laser_scan_state is not None:
+            laser_range = np.array(laser_scan_state.ranges)
+            return ruler.laser_front_fillup_rate(masked_laser_range, mask_values=True)
+        return None
+
+    def _move_forward(self, front_theta, lateral_theta, **kwargs):
         last_theta_alpha = self._last_actions_memory.last()
 
         last_theta = last_theta_alpha[0] if last_theta_alpha is not None else None
@@ -234,8 +239,6 @@ class UcvRobotPlanner:
 
         self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        #self.enqueue_action(UcvSteppedActionPlan(x=0.135, theta=0.0, steps=10))
-        #self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
@@ -243,28 +246,26 @@ class UcvRobotPlanner:
 
         return self._resolve_enqueued_actions()
 
-    def _make_turn(self, laser_scan_state, front_cam_state, left_cam_state, right_cam_state, **kwargs):
+    def _make_turn(self, laser_scan_state, laser_front_view_fill_rate, front_theta, **kwargs):
         """Analyse the laser and other sensors to see if it should turn left or right.
         Returns `(rho, theta)` or `None`"""
         if laser_scan_state is not None:
-            laser_range = np.array(laser_scan_state.ranges)
-            masked_laser_range = ruler.mask_laser_scan(laser_range)
+            rospy.loginfo(f'laser front view fill rate = {laser_front_view_fill_rate}')
 
-            lfr = ruler.laser_front_fillup_rate(masked_laser_range, mask_values=False)
-            rospy.logdebug('laser front fill rate = {}'.format(lfr))
-
-            if lfr > 0.5:
+            if front_theta == 0 and laser_front_view_fill_rate > 0.5:
                 if not self._last_actions_memory.empty():
                     theta_dev = -np.mean(self._last_actions_memory.all())
 
-                    rospy.logdebug('applying theta dev recovery = {}'.format(theta_dev))
+                    rospy.loginfo(f'applying theta dev recovery = {theta_dev}')
 
                     self._last_actions_memory.clear()
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
-                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
-                self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
-                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
-                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
+
+                # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
+                # self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
+                # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
+                rospy.loginfo('Time to make a turn')
                 return self._resolve_enqueued_actions()
         return None
 
@@ -282,7 +283,14 @@ class UcvRobotPlanner:
             gps_state = self._perception.gps_state,
         )
 
-        if (should_make_turn := self._make_turn(**kwargs)) is not None:
-            return should_make_turn
+        kwargs['lateral_theta'] = self._calculate_lateral_theta(
+           left_cam_state=kwargs['left_cam_state'],
+           right_cam_state=kwargs['right_cam_state']
+        )
 
+        kwargs['front_theta'] = self._calculate_front_theta(kwargs['front_cam_state'])
+        kwargs['laser_front_view_fill_rate'] = self._calculate_lrf(kwargs['laser_scan_state'])
+
+        if (turn := self._make_turn(**kwargs)) is not None:
+            return turn
         return self._move_forward(**kwargs)

@@ -124,19 +124,27 @@ def alpha_theta(theta, last_theta=None):
     return -theta / (4 * np.e) + trace
 
 
-def mask_laser_scan(value):
+def mask_laser_scan(value, lower=LASER_INTERESTING_RANGE[0], upper=LASER_INTERESTING_RANGE[1]):
     mask = np.ones_like(value)
-    mask[:LASER_INTERESTING_RANGE[0]] = float('inf')
-    mask[LASER_INTERESTING_RANGE[1]:] = float('inf')
+    mask[:lower] = float('inf')
+    mask[upper:] = float('inf')
     return mask * value
 
 
-def laser_front_fillup_rate(values, mask_values=True):
+def laser_front_fillup_rate(values, mask_values=True, distance = LASER_RHO_THRESH):
     if not mask_values:
         values = mask_laser_scan(values)
 
     poi = values[LASER_INTERESTING_RANGE[0]:LASER_INTERESTING_RANGE[1]].copy()
-    poi[poi > LASER_RHO_THRESH] = 0
+    poi[poi > distance] = 0
     poi[poi != 0] = 1
 
     return np.mean(poi)
+
+def laser_angles(laser_state):
+    if laser_state is not None:
+        min_angle = laser_state.angle_min
+        max_angle = laser_state.angle_max
+        step = (max_angle - min_angle) / len(laser_state.ranges)
+        return np.arange(min_angle, max_angle, step)
+    return None
