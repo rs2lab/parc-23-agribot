@@ -110,7 +110,7 @@ def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, fro
         theta = lateral_theta + front_theta
 
     if last_theta is not None:
-        theta -= last_theta / (8 * np.e)
+        theta -= (last_theta / (8 * np.e)) ** 2
 
     return theta
 
@@ -120,7 +120,7 @@ def alpha_theta(theta, last_theta=None):
     to adjust the route after applying a theta angular rotation."""
     trace = 0
     if last_theta is not None:
-        trace = last_theta / (8 * np.e)
+        trace = (last_theta / (8 * np.e)) ** 2
     return -theta / (4 * np.e) + trace
 
 
