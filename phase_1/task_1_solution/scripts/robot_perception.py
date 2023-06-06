@@ -40,16 +40,7 @@ class UcvRobotPerception:
         self._cmd_vel_state = None
 
         self._goal_pos = None
-        self._peg_1_pos = None
-        self._peg_2_pos = None
-        self._peg_3_pos = None
-        self._peg_4_pos = None
-        self._peg_5_pos = None
-        self._peg_6_pos = None
-        self._peg_7_pos = None
-        self._peg_8_pos = None
-        self._peg_A_pos = None
-        self._peg_B_pos = None
+        self._initial_pos = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -77,8 +68,6 @@ class UcvRobotPerception:
     def _trigger_callbacks(self, sensor_type, data):
         if sensor_type in self._state_update_callback_registry:
             callbacks = self._state_update_callback_registry[sensor_type]
-            if self.debug is True:
-                rospy.loginfo(f'Calling {len(callbacks)} callbacks for {sensor_type.value} sensor state update')
             for callback in callbacks:
                 callback(data)
 
@@ -204,71 +193,9 @@ class UcvRobotPerception:
             )
         return self._goal_pos
 
-    def _get_peg_pos(self, idf):
-        return BasicGeoPos(
-            latitude=rospy.get_param('/peg_{}/latitude'.format(idf)),
-            longitude=rospy.get_param('/peg_{}/longitude'.format(idf)),
-        )
-
     @property
-    def peg_1_pos(self):
-        if self._peg_1_pos is None:
-            self._peg_1_pos = self._get_peg_pos('01')
-        return self._peg_1_pos
-
-    @property
-    def peg_2_pos(self):
-        if self._peg_2_pos is None:
-            self._peg_2_pos = self._get_peg_pos('02')
-        return self._peg_2_pos
-
-    @property
-    def peg_3_pos(self):
-        if self._peg_3_pos is None:
-            self._peg_3_pos = self._get_peg_pos('03')
-        return self._peg_3_pos
-
-    @property
-    def peg_4_pos(self):
-        if self._peg_4_pos is None:
-            self._peg_4_pos = self._get_peg_pos('04')
-        return self._peg_4_pos
-
-    @property
-    def peg_5_pos(self):
-        if self._peg_5_pos is None:
-            self._peg_5_pos = self._get_peg_pos('05')
-        return self._peg_5_pos
-
-    @property
-    def peg_6_pos(self):
-        if self._peg_6_pos is None:
-            self._peg_6_pos = self._get_peg_pos('06')
-        return self._peg_6_pos
-
-    @property
-    def peg_7_pos(self):
-        if self._peg_7_pos is None:
-            self._peg_7_pos = self._get_peg_pos('07')
-        return self._peg_7_pos
-
-    @property
-    def peg_8_pos(self):
-        if self._peg_8_pos is None:
-            self._peg_8_pos = self._get_peg_pos('08')
-        return self._peg_8_pos
-
-    @property
-    def peg_A_pos(self):
-        if self._peg_A_pos is None:
-            self._peg_A_pos = self._get_peg_pos('A')
-        return self._peg_A_pos
-
-    @property
-    def peg_B_pos(self):
-        if self._peg_B_pos is None:
-            self._peg_B_pos = self._get_peg_pos('B')
-        return self._peg_B_pos
+    def initial_pos(self):
+        return self._initial_pos
 
     def _left_camera_state_update_handler(self, data):
         self._left_camera_state = data
@@ -284,6 +211,11 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
+        if self._initial_pos is None:
+            self._initial_pos = BasicGeoPos(
+                latitude=self._gps_state.latitude,
+                longitude=self._gps_state.longitude,
+            )
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
@@ -293,48 +225,3 @@ class UcvRobotPerception:
     def _cmd_vel_state_update_handler(self, data):
         self._cmd_vel_state = data
         self._trigger_callbacks(UcvSensorType.CMD_VEL, data)
-
-    def dist_to_peg_line(self, peg_a, peg_b):
-        dist = None
-        if self.gps_state is not None and peg_a is not None and peg_b is not None:
-            robot_pos = np.array((self.gps_state.latitude, self.gps_state.longitude))
-            mid_point = np.array((peg_a.lat + peg_b.lat, peg_a.lon + peg_b.lon)) / 2
-            dist = ruler.point_distance(*mid_point, *robot_pos)
-        return dist
-
-    def dist_to_peg_line_1(self):
-        return self.dist_to_peg_line(
-            peg_a=self.peg_1_pos,
-            peg_b=self.peg_4_pos,
-        )
-
-    def dist_to_peg_line_2(self):
-        return self.dist_to_peg_line(
-            peg_a=self.peg_2_pos,
-            peg_b=self.peg_3_pos,
-        )
-
-    def dist_to_peg_line_3(self):
-        return self.dist_to_peg_line(
-            peg_a=self.peg_3_pos,
-            peg_b=self.peg_6_pos,
-        )
-
-    def dist_to_peg_line_4(self):
-        return self.dist_to_peg_line(
-            peg_a=self.peg_4_pos,
-            peg_b=self.peg_5_pos,
-        )
-
-    def dist_to_peg_line_5(self):
-        return self.dist_to_peg_line(
-            peg_a=self.peg_6_pos,
-            peg_b=self.peg_7_pos,
-        )
-
-    def dist_to_peg_line_6(self):
-        return self.dist_to_peg_line(
-            peg_a=self.peg_5_pos,
-            peg_b=self.peg_8_pos,
-        )
-
