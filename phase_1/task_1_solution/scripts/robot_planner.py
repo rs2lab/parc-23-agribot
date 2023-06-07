@@ -228,6 +228,8 @@ class UcvRobotPlanner:
         return front_theta
 
     def _calculate_front_theta_improved(self, front_cam_state):
+        front_cam_image = None
+
         if front_cam_state is not None:
             front_cam_image = vision.imgmsg_to_cv2(front_cam_state)
             front_cam_image = vision.crop_front_image(front_cam_image)
