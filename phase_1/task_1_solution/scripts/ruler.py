@@ -125,10 +125,12 @@ def alpha_theta(theta, last_theta=None):
 
 
 def mask_laser_scan(value, lower=LASER_INTERESTING_RANGE[0], upper=LASER_INTERESTING_RANGE[1]):
-    mask = np.ones_like(value)
-    mask[:lower] = float('inf')
-    mask[upper:] = float('inf')
-    return mask * value
+    if value is not None:
+        mask = np.ones_like(value)
+        mask[:lower] = float('inf')
+        mask[upper:] = float('inf')
+        return mask * value
+    return None
 
 
 def laser_front_fillup_rate(values, mask_values=True, distance = LASER_RHO_THRESH):

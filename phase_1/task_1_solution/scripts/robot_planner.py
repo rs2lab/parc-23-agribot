@@ -86,7 +86,7 @@ class UcvRobotPlanner:
         self._control = control
         self._perception = perception
 
-        self._last_actions_memory = ForgetfulMemory(5)
+        self._last_actions_memory = ForgetfulMemory()
         self._next_actions_queue = BasicQueue()
 
         self._left_cam_line_reducer = ruler.define_line_reducer_on_point(
@@ -222,11 +222,10 @@ class UcvRobotPlanner:
 
         return front_theta
 
-    def _calculate_lfr(self, laser_scan_state):
+    def _calculate_lfr(self, laser_scan_masked_ranges):
         """laser_fill_rate_in_the_view_angle""" # TODO: update docstring
-        if laser_scan_state is not None:
-            laser_range = np.array(laser_scan_state.ranges)
-            return ruler.laser_front_fillup_rate(laser_range, mask_values=True)
+        if laser_scan_masked_ranges is not None:
+            return ruler.laser_front_fillup_rate(laser_scan_masked_ranges, mask_values=False)
         return None
 
     def _move_forward(self, front_theta, lateral_theta, **kwargs):
@@ -247,11 +246,14 @@ class UcvRobotPlanner:
 
         return self._resolve_enqueued_actions()
 
-    def _make_turn(self, laser_scan_state, laser_front_view_fill_rate, front_theta, **kwargs):
+    def _make_turn(self, laser_scan_state, laser_front_view_fill_rate, front_theta, closest_laser_dist, closest_laser_angle, **kwargs):
         """Analyse the laser and other sensors to see if it should turn left or right.
         Returns `(rho, theta)` or `None`"""
         if laser_scan_state is not None:
             rospy.loginfo(f'laser front view fill rate = {laser_front_view_fill_rate}')
+            rospy.loginfo(f'closest laser front distance = {closest_laser_dist}')
+            rospy.loginfo(f'closest laser front angle = {closest_laser_angle}')
+
 
             if front_theta == 0 and laser_front_view_fill_rate > 0.5:
                 if not self._last_actions_memory.empty():
@@ -285,6 +287,20 @@ class UcvRobotPlanner:
             laser_scan_state = self._perception.laser_scan_state,
             gps_state = self._perception.gps_state,
         )
+
+        kwargs['laser_scan_masked_ranges'] = ruler.mask_laser_scan(laser_scan_state.ranges)
+        kwargs['laser_scan_angles'] = ruler.laser_angles(laser_scan_state)
+
+        closest_laser_dist = None
+        closest_laser_angle = None
+
+        if kwargs['laser_scan_masked_ranges'] is not None:
+            idx = np.argmin(kwargs['laser_scan_masked_ranges'])
+            closest_laser_dist = kwargs['laser_scan_masked_ranges'][idx]
+            closest_laser_angle = kwargs['laser_scan_angles'][idx]
+
+        kwargs['closest_laser_distance'] = closest_laser_dist
+        kwargs['closest_laser_angle'] = closest_laser_angle
 
         kwargs['lateral_theta'] = self._calculate_lateral_theta(
            left_cam_state=kwargs['left_cam_state'],
