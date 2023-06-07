@@ -59,13 +59,13 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
             (xl, yl), dl = closest_point(FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
         else:
             xl, yl = FRONT_VISION_LEFT_POINT - (160, 0)
-            dl = 2 * point_distance(xl, yl, *FRONT_VISION_LEFT_POINT)
+            dl = 1.5 * point_distance(xl, yl, *FRONT_VISION_LEFT_POINT)
 
         if closest_front_right_line is not None:
             (xr, yr), dr = closest_point(FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
         else:
             xr, yr = FRONT_VISION_RIGHT_POINT + (160, 0)
-            dr = 2 * point_distance(xr, yr, *FRONT_VISION_RIGHT_POINT)
+            dr = 1.5 * point_distance(xr, yr, *FRONT_VISION_RIGHT_POINT)
 
         num = point_distance(xl, yl, xr, yr)
         num = np.log(num) if num > np.e else num
@@ -82,12 +82,12 @@ def lateral_shift_transfer_function(closest_left_line, closest_right_line):
     if closest_left_line is not None:
         (xl, yl), dl = closest_point(CROPPED_LATERAL_LEFT_VISION_POINT, closest_left_line.reshape(2, 2))
     else:
-        dl = 1.15 * point_distance(CROPPED_LATERAL_LEFT_VISION_POINT[0], 0, *CROPPED_LATERAL_LEFT_VISION_POINT)
+        dl = 1.5 * point_distance(CROPPED_LATERAL_LEFT_VISION_POINT[0], 0, *CROPPED_LATERAL_LEFT_VISION_POINT)
 
     if closest_right_line is not None:
         (xr, yr), dr = closest_point(CROPPED_LATERAL_RIGHT_VISION_POINT, closest_right_line.reshape(2, 2))
     else:
-        dr = 1.15 * point_distance(CROPPED_LATERAL_RIGHT_VISION_POINT[0], 480, *CROPPED_LATERAL_RIGHT_VISION_POINT)
+        dr = 1.5 * point_distance(CROPPED_LATERAL_RIGHT_VISION_POINT[0], 480, *CROPPED_LATERAL_RIGHT_VISION_POINT)
 
     result = 0
     if  np.abs(d := dl - dr) > 1:
@@ -110,7 +110,8 @@ def theta_weighted_sum(*, lateral_theta, front_theta, lateral_weight = 0.65, fro
         theta = lateral_theta + front_theta
 
     if last_theta is not None:
-        theta -= (last_theta / (8 * np.e)) ** 2
+        #theta -= last_theta / (12 * np.e)
+        pass
 
     return theta
 
@@ -120,8 +121,8 @@ def alpha_theta(theta, last_theta=None):
     to adjust the route after applying a theta angular rotation."""
     trace = 0
     if last_theta is not None:
-        trace = (last_theta / (8 * np.e)) ** 2
-    return -theta / (4 * np.e) + trace
+        trace = last_theta / (12 * np.e)
+    return -theta / 16 + trace 
 
 
 def mask_laser_scan(value, lower=LASER_INTERESTING_RANGE[0], upper=LASER_INTERESTING_RANGE[1]):

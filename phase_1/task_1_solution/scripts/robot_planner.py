@@ -8,12 +8,13 @@ from geometry_msgs.msg import Twist
 from functools import reduce
 
 from constants import (
+    SAFEST_BARN_TURN_DISTANCE,
     CROPPED_LATERAL_LEFT_VISION_POINT,
     CROPPED_LATERAL_RIGHT_VISION_POINT,
     FRONT_VISION_LEFT_POINT,
     FRONT_VISION_RIGHT_POINT,
     FRONT_MASK_03,
-    LASER_THETA
+    LASER_THETA,
 )
 
 from helpers import (
@@ -105,6 +106,8 @@ class UcvRobotPlanner:
             point=FRONT_VISION_RIGHT_POINT
         )
 
+        self._as_turned_first_row = False
+
     @property
     def _has_enqueued_actions(self):
         return not self._next_actions_queue.empty()
@@ -114,7 +117,7 @@ class UcvRobotPlanner:
         if not self._next_actions_queue.empty():
             planned_action = self._next_actions_queue.dequeue()
             return planned_action
-        return UcvSteppedActionPlan(x=0, theta=0, steps=0)
+        return UcvSteppedActionPlan(x=0, theta=0, steps=1)
 
     def enqueue_action(self, action):
         """Add a new action to the action queue."""
@@ -174,10 +177,10 @@ class UcvRobotPlanner:
             ),
         )
 
-        lateral_theta = lateral_plant_theta # + lateral_stake_theta
+        lateral_theta = lateral_plant_theta + lateral_stake_theta / 2
 
         if lateral_plant_theta != 0 and lateral_stake_theta != 0:
-            lateral_theta = lateral_plant_theta * 0.7 + lateral_stake_theta * 0.3
+            lateral_theta = lateral_plant_theta * 0.75 + lateral_stake_theta * 0.25
 
         return lateral_theta
 
@@ -215,10 +218,10 @@ class UcvRobotPlanner:
             ),
         )
 
-        front_theta = front_plant_theta # + front_stake_theta
+        front_theta = front_plant_theta + front_stake_theta / 2
 
         if front_plant_theta != 0 and front_stake_theta != 0:
-            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.2
+            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.20
 
         return front_theta
 
@@ -237,7 +240,7 @@ class UcvRobotPlanner:
 
         self._last_actions_memory.add((theta, alpha))
 
-        self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=theta * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.125, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
@@ -254,8 +257,11 @@ class UcvRobotPlanner:
             rospy.loginfo(f'closest laser front distance = {closest_laser_dist}')
             rospy.loginfo(f'closest laser front angle = {closest_laser_angle}')
 
+            groute = self._perception.guess_route_number()
+            switch = True if groute in (1, 3) else False
+            safe_distance = SAFEST_BARN_TURN_DISTANCE if switch else SAFEST_CAR_TURN_DISTANCE
 
-            if front_theta == 0 and laser_front_view_fill_rate > 0.5:
+            if front_theta == 0 and laser_front_view_fill_rate > 0.5 and closest_laser_dist < safe_distance:
                 if not self._last_actions_memory.empty():
                     theta_dev = -np.mean(self._last_actions_memory.all())
 
@@ -265,12 +271,25 @@ class UcvRobotPlanner:
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
 
                 direction = self._perception.guess_first_rotation_direction()
+                turn = direction.value
+                
+                if self._as_turned_first_row is True:
+                    turn = -turn
+
                 side = 'left' if direction == RotationType.ANTICLOCKWISE else 'right'
                 rospy.loginfo(f'Time to make a turn to the {side} side!')
-                # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
-                # self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=0, steps=10))
-                # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
-                # self.enqueue_action(UcvSteppedActionPlan(x=0, theta=np.pi / 2 * 0.1, steps=10))
+
+                self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=turn * np.pi * 0.1, steps=18))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                self.enqueue_action(UcvSteppedActionPlan(x=0.95, theta=0, steps=20))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=turn * np.pi * 0.1, steps=18))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+                self._as_turned_first_row = True
                 return self._resolve_enqueued_actions()
         return None
 
