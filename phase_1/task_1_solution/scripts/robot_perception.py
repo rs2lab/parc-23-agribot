@@ -46,6 +46,7 @@ class UcvRobotPerception:
         self._initial_pos = None
 
         self._first_row_rotation = None
+        self._route_number = None
 
         self._state_update_callback_registry = {
             UcvSensorType.CAM_LEFT: [],
@@ -240,3 +241,17 @@ class UcvRobotPerception:
             else:
                 self._first_row_rotation = RotationType.CLOCKWISE
         return self._first_row_rotation
+
+    def guess_route_number(self):
+        """Tries to guess the number of the route."""
+        if self._route_number is None:
+            diff = self.goal_pos.sub(self.initial_pos)
+            if diff.lat < 0 and diff.lon > 0:
+                self._route_number = 1
+            elif diff.lat > 0 and diff.lon < 0:
+                self._route_number = 2
+            elif diff.lat < 0 and diff.lon < 0:
+                self._route_number = 3
+            else:
+                self._route_number = 4
+        return self._route_number
