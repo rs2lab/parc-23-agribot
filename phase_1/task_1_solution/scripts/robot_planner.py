@@ -237,12 +237,12 @@ class UcvRobotPlanner:
 
         self._last_actions_memory.add((theta, alpha))
 
-        self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=theta * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.225, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=alpha * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.125, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
-        self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
+        #self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
+        #self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
         return self._resolve_enqueued_actions()
 
@@ -288,8 +288,11 @@ class UcvRobotPlanner:
             gps_state = self._perception.gps_state,
         )
 
-        kwargs['laser_scan_masked_ranges'] = ruler.mask_laser_scan(laser_scan_state.ranges)
-        kwargs['laser_scan_angles'] = ruler.laser_angles(laser_scan_state)
+        kwargs['laser_scan_masked_ranges'] = ruler.mask_laser_scan(
+            value=np.array(kwargs['laser_scan_state'].ranges) if kwargs['laser_scan_state'] else None
+        )
+
+        kwargs['laser_scan_angles'] = ruler.laser_angles(kwargs['laser_scan_state'])
 
         closest_laser_dist = None
         closest_laser_angle = None
@@ -299,7 +302,7 @@ class UcvRobotPlanner:
             closest_laser_dist = kwargs['laser_scan_masked_ranges'][idx]
             closest_laser_angle = kwargs['laser_scan_angles'][idx]
 
-        kwargs['closest_laser_distance'] = closest_laser_dist
+        kwargs['closest_laser_dist'] = closest_laser_dist
         kwargs['closest_laser_angle'] = closest_laser_angle
 
         kwargs['lateral_theta'] = self._calculate_lateral_theta(
@@ -308,7 +311,7 @@ class UcvRobotPlanner:
         )
 
         kwargs['front_theta'] = self._calculate_front_theta(kwargs['front_cam_state'])
-        kwargs['laser_front_view_fill_rate'] = self._calculate_lfr(kwargs['laser_scan_state'])
+        kwargs['laser_front_view_fill_rate'] = self._calculate_lfr(kwargs['laser_scan_masked_ranges'])
 
         if (turn := self._make_turn(**kwargs)) is not None:
             return turn
