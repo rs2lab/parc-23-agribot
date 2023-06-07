@@ -177,7 +177,7 @@ class UcvRobotPlanner:
         lateral_theta = lateral_plant_theta # + lateral_stake_theta
 
         if lateral_plant_theta != 0 and lateral_stake_theta != 0:
-            lateral_theta = lateral_plant_theta * 0.75 + lateral_stake_theta * 0.25
+            lateral_theta = lateral_plant_theta * 0.7 + lateral_stake_theta * 0.3
 
         return lateral_theta
 
