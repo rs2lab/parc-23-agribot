@@ -13,7 +13,8 @@ from constants import (
     FRONT_VISION_LEFT_POINT,
     FRONT_VISION_RIGHT_POINT,
     FRONT_MASK_03,
-    LASER_THETA
+    LASER_THETA,
+    FRONT_VISION_CENTRAL_POINT,
 )
 
 from helpers import (
@@ -103,6 +104,10 @@ class UcvRobotPlanner:
 
         self._front_right_line_reducer = ruler.define_line_reducer_on_point(
             point=FRONT_VISION_RIGHT_POINT
+        )
+
+        self._front_central_line_reducer = ruler.define_line_reducer_on_point(
+            point=FRONT_VISION_CENTRAL_POINT
         )
 
     @property
@@ -222,6 +227,53 @@ class UcvRobotPlanner:
 
         return front_theta
 
+    def _calculate_front_theta_improved(self, front_cam_state):
+        if front_cam_state is not None:
+            front_cam_image = vision.imgmsg_to_cv2(front_cam_state)
+            front_cam_image = vision.crop_front_image(front_cam_image)
+            front_cam_image = vision.mask_image(front_cam_image, mask=FRONT_MASK_02)
+
+        front_plant_theta = ruler.front_transfer_fn_improved(
+            left=vision.filter_left_front_lines(
+                image=front_cam_image,
+                detection_fn=vision.detect_plants,
+                left_bound=FRONT_VISION_CENTRAL_POINT[0],
+                reduce_fn=self._front_central_line_reducer,
+                totally_left=True
+            ),
+            right=vision.filter_right_front_lines(
+                image=front_cam_image,
+                detection_fn=vision.detect_plants,
+                right_bound=FRONT_VISION_CENTRAL_POINT[0],
+                reduce_fn=self._front_central_line_reducer,
+                totally_right=True
+            ),
+        )
+
+        front_stake_theta = ruler.front_transfer_fn_improved(
+            left=vision.filter_left_front_lines(
+                image=front_cam_image,
+                detection_fn=vision.detect_stake,
+                left_bound=FRONT_VISION_CENTRAL_POINT[0],
+                reduce_fn=self._front_central_line_reducer,
+                totally_left=True
+            ),
+            right=vision.filter_right_front_lines(
+                image=front_cam_image,
+                detection_fn=vision.detect_stake,
+                right_bound=FRONT_VISION_CENTRAL_POINT[0],
+                reduce_fn=self._front_central_line_reducer,
+                totally_right=True
+            ),
+        )
+
+        front_theta = front_plant_theta # + front_stake_theta
+
+        if front_plant_theta != 0 and front_stake_theta != 0:
+            front_theta = front_plant_theta * 0.8 + front_stake_theta * 0.2
+
+        return front_theta
+
     def _calculate_lfr(self, laser_scan_masked_ranges):
         """laser_fill_rate_in_the_view_angle""" # TODO: update docstring
         if laser_scan_masked_ranges is not None:
@@ -310,7 +362,7 @@ class UcvRobotPlanner:
            right_cam_state=kwargs['right_cam_state']
         )
 
-        kwargs['front_theta'] = self._calculate_front_theta(kwargs['front_cam_state'])
+        kwargs['front_theta'] = self._calculate_front_theta_improved(kwargs['front_cam_state'])
         kwargs['laser_front_view_fill_rate'] = self._calculate_lfr(kwargs['laser_scan_masked_ranges'])
 
         if (turn := self._make_turn(**kwargs)) is not None:

@@ -4,6 +4,7 @@ import numpy as np
 FRONT_MASK_01 = cv2.imread('../images/front_vision_mask_01.png', 0)
 FRONT_MASK_02 = cv2.imread('../images/front_vision_mask_02.png', 0)
 FRONT_MASK_03 = cv2.imread('../images/front_vision_mask_03.png', 0)
+FRONT_MASK_04 = cv2.imread('../images/front_vision_mask_04.png', 0)
 
 DEFAULT_SEG_CRT = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
 
@@ -19,6 +20,7 @@ CROPPED_LATERAL_RIGHT_VISION_POINT = LATERAL_RIGHT_VISION_POINT - (LATERAL_CROP_
 
 FRONT_VISION_LEFT_POINT = np.array((200, 324)) + (-25, 0)
 FRONT_VISION_RIGHT_POINT = np.array((440, 324)) + (25, 0)
+FRONT_VISION_CENTRAL_POINT = np.array((320, 260))
 
 LASER_INTERESTING_RANGE = (188 - 40, 212 + 40)
 

@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 
 from cv_bridge import CvBridge
+from functools import reduce
 
 from constants import (
     DEFAULT_SEG_CRT,
@@ -139,3 +140,44 @@ def crop_front_image(image, yy_thresh = DARK_AREA_CROP_YY_THRESH):
 
 def crop_lateral_image(image, xx_thresh = LATERAL_CROP_XX_THRESH):
     return image[::, xx_thresh:]
+
+
+def filter_left_front_lines(image, detection_fn, left_bound, reduce_fn=None, totally_left=False):
+    if image is None:
+        return None
+
+    image_d = detection_fn(image)
+    lines = hough_lines(image_d)
+    l = []
+
+    for x0, y0, x1, y1 in lines.reshape(-1, 4):
+        if not totally_left and (x0 < left_bound or x1 < left_bound):
+            l.append((x0, y0, x1, y1))
+        elif totally_left and x0 < left_bound and x1 < left_bound:
+            l.append((x0, y0, x1, y1))
+
+    l = np.array(l)
+    if reduce_fn is not None:
+        l = reduce(reduce_fn, l)
+
+    return l
+
+def filter_right_front_lines(image, detection_fn, right_bound, reduce_fn=None, totally_right=False):
+    if image is None:
+        return None
+
+    image_d = detection_fn(image)
+    lines = hough_lines(image_d)
+    l = []
+
+    for x0, y0, x1, y1 in lines.reshape(-1, 4):
+        if not totally_right and (x0 > right_bound or x1 > right_bound):
+            l.append((x0, y0, x1, y1))
+        elif totally_right and x0 > right_bound and x1 > right_bound:
+            l.append((x0, y0, x1, y1))
+
+    l = np.array(l)
+    if reduce_fn is not None:
+        l = reduce(reduce_fn, l)
+
+    return l

@@ -75,6 +75,38 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
         return 0
 
 
+def front_transfer_fn_improved(left, right):
+    if left is None and right is None:
+        return 0
+
+    VREF = np.array((FRONT_VISION_CENTRAL_POINT[0], DARK_AREA_CROP_YY_THRESH - 1))
+
+    (xl, yl), dl = (None, None), None
+    (xr, yr), dr = (None, None), None
+
+    if left is not None:
+        (xl, yl), dl = closest_point(VREF, left.reshape(2, 2))
+    if right is not None:
+        (xr, yr), dr = closest_point(VREF, right.reshape(2, 2))
+
+    if left is None and right is not None:
+        (xl, yl) = (640 - xr - 5, yr)
+        dl = point_distance(*VREF, xl, yl)
+    elif right is None and left is not None:
+        (xr, yr) = (640 - xl + 5, yl)
+        dr = point_distance(*VREF, xr, yr)
+
+    d = dl - dr
+    yd = np.abs(VREF[1] - yl) - np.abs(VREF[1] - yr)
+    dd = point_distance(xl, yl, xr, yl)
+
+    r = (d + yd) / dd if dd > 1 else d + yd
+
+    if np.abs(r) > 1:
+        return np.sign(r) * np.log(np.abs(r))
+    return np.sign(r) * np.abs(r) ** np.e
+
+
 def lateral_shift_transfer_function(closest_left_line, closest_right_line):
     (xl, yl), dl = (None, None), None
     (xr, yr), dr = (None, None), None
@@ -92,11 +124,6 @@ def lateral_shift_transfer_function(closest_left_line, closest_right_line):
     result = 0
     if  np.abs(d := dl - dr) > 1:
         result = (np.pi / 2) * np.tanh(np.sign(d) * 0.1 * np.log10(np.abs(d)))
-
-    #if (closest_left_line is None and xr is not None and xr < CROPPED_LATERAL_RIGHT_VISION_POINT[0] - 80) or \
-    #        (closest_right_line is None and xl is not None and xl < CROPPED_LATERAL_LEFT_VISION_POINT[0] - 80):
-    #    result /= 4
-
     return result
 
 
