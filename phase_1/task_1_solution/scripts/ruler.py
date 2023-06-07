@@ -51,7 +51,7 @@ def define_line_reducer_on_point(point):
     return reducer
 
 
-def front_shift_transfer_function(closest_front_left_line, closest_front_right_line):
+def front_shift_transfer_function(closest_front_left_line, closest_front_right_line, hidden = 1.5):
         (xl, yl), dl = (None, None), None
         (xr, yr), dr = (None, None), None
 
@@ -59,35 +59,35 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
             (xl, yl), dl = closest_point(FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
         else:
             xl, yl = FRONT_VISION_LEFT_POINT - (160, 0)
-            dl = 1.5 * point_distance(xl, yl, *FRONT_VISION_LEFT_POINT)
+            dl = hidden * point_distance(xl, yl, *FRONT_VISION_LEFT_POINT)
 
         if closest_front_right_line is not None:
             (xr, yr), dr = closest_point(FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
         else:
             xr, yr = FRONT_VISION_RIGHT_POINT + (160, 0)
-            dr = 1.5 * point_distance(xr, yr, *FRONT_VISION_RIGHT_POINT)
+            dr = hidden * point_distance(xr, yr, *FRONT_VISION_RIGHT_POINT)
 
         num = point_distance(xl, yl, xr, yr)
         num = np.log(num) if num > np.e else num
 
         if np.abs(denum := dl - dr) > 1:
-            return (np.pi / 2) * np.tanh(num / (denum * 1.75))
+            return (np.pi / 2) * np.tanh((denum / num ** 2))
         return 0
 
 
-def lateral_shift_transfer_function(closest_left_line, closest_right_line):
+def lateral_shift_transfer_function(closest_left_line, closest_right_line, hidden=1.35):
     (xl, yl), dl = (None, None), None
     (xr, yr), dr = (None, None), None
 
     if closest_left_line is not None:
         (xl, yl), dl = closest_point(CROPPED_LATERAL_LEFT_VISION_POINT, closest_left_line.reshape(2, 2))
     else:
-        dl = 1.5 * point_distance(CROPPED_LATERAL_LEFT_VISION_POINT[0], 0, *CROPPED_LATERAL_LEFT_VISION_POINT)
+        dl = hidden * point_distance(CROPPED_LATERAL_LEFT_VISION_POINT[0], 0, *CROPPED_LATERAL_LEFT_VISION_POINT)
 
     if closest_right_line is not None:
         (xr, yr), dr = closest_point(CROPPED_LATERAL_RIGHT_VISION_POINT, closest_right_line.reshape(2, 2))
     else:
-        dr = 1.5 * point_distance(CROPPED_LATERAL_RIGHT_VISION_POINT[0], 480, *CROPPED_LATERAL_RIGHT_VISION_POINT)
+        dr = hidden * point_distance(CROPPED_LATERAL_RIGHT_VISION_POINT[0], 480, *CROPPED_LATERAL_RIGHT_VISION_POINT)
 
     result = 0
     if  np.abs(d := dl - dr) > 1:

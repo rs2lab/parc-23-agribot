@@ -9,6 +9,7 @@ from functools import reduce
 
 from constants import (
     SAFEST_BARN_TURN_DISTANCE,
+    SAFEST_CAR_TURN_DISTANCE,
     CROPPED_LATERAL_LEFT_VISION_POINT,
     CROPPED_LATERAL_RIGHT_VISION_POINT,
     FRONT_VISION_LEFT_POINT,
@@ -162,6 +163,7 @@ class UcvRobotPlanner:
                 detection_fn=vision.detect_plants,
                 reduce_fn=self._right_cam_line_reducer,
             ),
+            hidden=1.7,
         )
 
         lateral_stake_theta = ruler.lateral_shift_transfer_function(
@@ -175,6 +177,7 @@ class UcvRobotPlanner:
                 detection_fn=vision.detect_stake,
                 reduce_fn=self._right_cam_line_reducer,
             ),
+            hidden=1.5,
         )
 
         lateral_theta = lateral_plant_theta + lateral_stake_theta / 2
@@ -239,10 +242,11 @@ class UcvRobotPlanner:
         alpha = ruler.alpha_theta(theta, last_theta=last_theta)
 
         self._last_actions_memory.add((theta, alpha))
+        scale = 0.1 ** np.abs(front_theta - lateral_theta)
 
-        self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=theta * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.7 * scale, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        self.enqueue_action(UcvSteppedActionPlan(x=0.125, theta=alpha * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.125 * scale, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         #self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
         #self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
@@ -259,9 +263,11 @@ class UcvRobotPlanner:
 
             groute = self._perception.guess_route_number()
             switch = True if groute in (1, 3) else False
+            if self._as_turned_first_row is True:
+                switch = not switch
             safe_distance = SAFEST_BARN_TURN_DISTANCE if switch else SAFEST_CAR_TURN_DISTANCE
 
-            if front_theta == 0 and laser_front_view_fill_rate > 0.5 and closest_laser_dist < safe_distance:
+            if front_theta == 0 and laser_front_view_fill_rate > 0.35 and closest_laser_dist < safe_distance:
                 if not self._last_actions_memory.empty():
                     theta_dev = -np.mean(self._last_actions_memory.all())
 
