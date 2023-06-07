@@ -237,7 +237,7 @@ class UcvRobotPlanner:
 
         self._last_actions_memory.add((theta, alpha))
 
-        self.enqueue_action(UcvSteppedActionPlan(x=0.225, theta=theta * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.2, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.125, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
