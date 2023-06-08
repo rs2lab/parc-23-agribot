@@ -247,9 +247,9 @@ class UcvRobotPlanner:
         self._last_actions_memory.add((theta, alpha))
         scale = 0.1 ** np.abs(front_theta - lateral_theta)
 
-        self._cum_x += 0.6 * scale * 10 + 0.125 * scale * 10
+        self._cum_x += 0.8 * scale * 10 + 0.125 * scale * 10
 
-        self.enqueue_action(UcvSteppedActionPlan(x=0.6 * scale, theta=theta * 0.1, steps=10))
+        self.enqueue_action(UcvSteppedActionPlan(x=0.8 * scale, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.125 * scale, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
