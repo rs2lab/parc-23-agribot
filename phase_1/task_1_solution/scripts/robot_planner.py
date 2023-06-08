@@ -108,6 +108,7 @@ class UcvRobotPlanner:
         )
 
         self._as_turned_first_row = False
+        self._cum_x = 0
 
     @property
     def _has_enqueued_actions(self):
@@ -180,6 +181,7 @@ class UcvRobotPlanner:
             hidden=1.5,
         )
 
+        self._lat_plant_theta = lateral_plant_theta
         lateral_theta = lateral_plant_theta + lateral_stake_theta / 2
 
         if lateral_plant_theta != 0 and lateral_stake_theta != 0:
@@ -244,7 +246,9 @@ class UcvRobotPlanner:
         self._last_actions_memory.add((theta, alpha))
         scale = 0.1 ** np.abs(front_theta - lateral_theta)
 
-        self.enqueue_action(UcvSteppedActionPlan(x=0.7 * scale, theta=theta * 0.1, steps=10))
+        self._cum_x += 0.6 * scale * 10 + 0.125 * scale * 10
+
+        self.enqueue_action(UcvSteppedActionPlan(x=0.6 * scale, theta=theta * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.125 * scale, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
@@ -263,11 +267,15 @@ class UcvRobotPlanner:
 
             groute = self._perception.guess_route_number()
             switch = True if groute in (1, 3) else False
+
             if self._as_turned_first_row is True:
                 switch = not switch
+
             safe_distance = SAFEST_BARN_TURN_DISTANCE if switch else SAFEST_CAR_TURN_DISTANCE
 
-            if front_theta == 0 and laser_front_view_fill_rate > 0.35 and closest_laser_dist < safe_distance:
+            rospy.loginfo('Cum X == {}'.format(self._cum_x))
+            if front_theta == 0 and laser_front_view_fill_rate > 0.35 and self._cum_x > 124 and (self._cum_x > 127.5 or closest_laser_dist < safe_distance):
+                self._cum_x = 0 # reset
                 if not self._last_actions_memory.empty():
                     theta_dev = -np.mean(self._last_actions_memory.all())
 
@@ -277,23 +285,25 @@ class UcvRobotPlanner:
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
 
                 direction = self._perception.guess_first_rotation_direction()
-                turn = direction.value
                 
                 if self._as_turned_first_row is True:
-                    turn = -turn
+                    direction = RotationType.CLOCKWISE if direction == RotationType.ANTICLOCKWISE else RotationType.ANTICLOCKWISE 
 
+                turn = direction.value
                 side = 'left' if direction == RotationType.ANTICLOCKWISE else 'right'
                 rospy.loginfo(f'Time to make a turn to the {side} side!')
 
+                scale = 0.6 if self._as_turned_first_row else 1
+                    
                 self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=turn * np.pi * 0.1, steps=18))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
-                self.enqueue_action(UcvSteppedActionPlan(x=0.95, theta=0, steps=20))
+                self.enqueue_action(UcvSteppedActionPlan(x=0.95 * scale, theta=0, steps=20))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=turn * np.pi * 0.1, steps=18))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
-                self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
+                self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
                 self._as_turned_first_row = True
                 return self._resolve_enqueued_actions()
