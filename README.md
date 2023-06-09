@@ -20,7 +20,7 @@ Some of the dependencies needed to run our project can be found inside the packa
 - Numpy >= 1.17.4
 
 #### How to Run?
-Supposing you already have the system configured, the task 1 can be executed with the following steps:
+Supposing you already have the [system configured](https://parc-robotics.github.io/documentation-2023/getting-started-tutorials/setting-up-your-pc/), the task 1 can be executed with the following steps:
 
 1. Downloading and moving the source folder of our project to the `catkin_ws/src` dir, the going back to the root of the directory `catkin_ws` and running `catkin_make` which will build the code and download required packages.
 2. Run the task number 1 recurring to the route you want to test our agent against
@@ -81,6 +81,3 @@ We've faced many challenges during the project, but we overcame some of them.
 - The time we had to complete the tasks didn't help, even more considering that we had to learn ROS from the beginning, but, we have the sense that working with time restriction is also a fundamental part of engineering
 
 - Encountering the GPS data on the task 2 was a considerable challenge as well
-
-## More info
-The original repository by which this project was run (even though not exclusively) was [anaximeno/parc-unicv](https://github.com/anaximeno/parc-unicv.git).
