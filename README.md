@@ -71,13 +71,3 @@ Weed_detection = cat(1, Weed_detection, Weed_detection)
 
 #### How to run?
 Just open the correspondent matlab files in matlab and run it altogether with the task 2. 
-## Challenges faced
-We've faced many challenges during the project, but we overcame some of them.
-
-- The first challenge was the nature of the tasks, which is something most of the elements (if not all) of the group were not accustomed working with
-
-- Another challenge was to define which of the sensors were the most adequate each of the problems we had to solve, to overcome that we had to test many of the sensors and stick with the ones the gave better results to our tests
-
-- The time we had to complete the tasks didn't help, even more considering that we had to learn ROS from the beginning, but, we have the sense that working with time restriction is also a fundamental part of engineering
-
-- Encountering the GPS data on the task 2 was a considerable challenge as well
