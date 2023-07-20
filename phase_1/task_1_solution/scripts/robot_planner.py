@@ -297,7 +297,7 @@ class UcvRobotPlanner:
                 side = 'left' if direction == RotationType.ANTICLOCKWISE else 'right'
                 rospy.loginfo(f'Time to make a turn to the {side} side!')
 
-                scale = 0.6 if self._as_turned_first_row else 1
+                scale = 0.6 if self._has_turned_first_row else 1
 
                 self.enqueue_action(UcvSteppedActionPlan(x=0.1, theta=0, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))

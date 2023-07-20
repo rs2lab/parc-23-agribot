@@ -82,7 +82,9 @@ class BasicGeoPos:
 
     def sub(self, pos):
         """Return the subtraction of this position by the given `pos`"""
-        return BasicGeoPos(
-            latitude=self.lat - pos.lat,
-            longitude=self.lon - pos.lon,
-        )
+        if pos is not None:
+            return BasicGeoPos(
+                latitude=self.lat - pos.lat,
+                longitude=self.lon - pos.lon,
+            )
+        return self
