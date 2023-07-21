@@ -10,7 +10,7 @@ class UcvRobotAgent:
         self._node_id = node_id
         self.debug = debug
 
-        rospy.init_node(node_id, anonymous=False, log_level=rospy.DEBUG is debug else rospy.INFO)
+        rospy.init_node(node_id, anonymous=False, log_level=rospy.DEBUG if debug else rospy.INFO)
         rospy.on_shutdown(self._on_shutdown)
         rospy.logdebug(f'Starting Task 1 Solver Agent {self._node_id!r}')
 

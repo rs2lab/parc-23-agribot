@@ -6,8 +6,8 @@ from collections import deque
 
 
 class RotationType(enum.Enum):
-    ANTICLOCKWISE = 1
-    CLOCKWISE = -1
+    ANTICLOCKWISE = -1
+    CLOCKWISE = 1
 
 
 class ForgetfulMemory:

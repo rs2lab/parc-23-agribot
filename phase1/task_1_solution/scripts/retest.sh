@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rosservice call /gazebo/reset_world && ./main.py
+rosservice call /gazebo/reset_world && DEBUG=1 ./main.py
 
 if [[ $? -ne 0 ]]
 then
