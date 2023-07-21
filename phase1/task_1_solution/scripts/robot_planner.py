@@ -227,6 +227,7 @@ class UcvRobotPlanner:
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
 
                 direction = self._perception.guess_first_rotation_direction()
+                rospy.logdebug("Route number: %i" % self._perception.guess_route_number())
 
                 if self._has_turned_first_row is True:
                     self._has_turned_second_row = True

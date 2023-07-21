@@ -55,10 +55,10 @@ class UcvRobotPerception:
             UcvSensorType.CMD_VEL: [],
         }
 
+        rospy.Subscriber(UcvSensorType.GPS.value, NavSatFix, self._gps_state_update_handler)
         rospy.Subscriber(UcvSensorType.CAM_LEFT.value, Image, self._left_camera_state_update_handler)
         rospy.Subscriber(UcvSensorType.CAM_RIGHT.value, Image, self._right_camera_state_update_handler)
         rospy.Subscriber(UcvSensorType.CAM_FRONT.value, Image, self._front_camera_state_update_handler)
-        rospy.Subscriber(UcvSensorType.GPS.value, NavSatFix, self._gps_state_update_handler)
         rospy.Subscriber(UcvSensorType.LASER_SCAN.value, LaserScan, self._laser_scan_state_update_handler)
         rospy.Subscriber(UcvSensorType.CMD_VEL.value, Twist, self._cmd_vel_state_update_handler)
 
@@ -215,11 +215,14 @@ class UcvRobotPerception:
 
     def _gps_state_update_handler(self, data):
         self._gps_state = data
-        if self._initial_pos is None:
+        rospy.logdebug('===========================> Before')
+        if self._initial_pos is None and data is not None:
             self._initial_pos = BasicGeoPos(
                 latitude=self._gps_state.latitude,
                 longitude=self._gps_state.longitude,
             )
+            rospy.logdebug(f'Initial --> Lat = {self._initial_pos.lat}, Lon = {self._initial_pos.lon}')
+            rospy.logdebug(f'Goal --> Lat = {self._goal_pos.lat}, Lon = {self._goal_pos.lon}')
         self._trigger_callbacks(UcvSensorType.GPS, data)
 
     def _laser_scan_state_update_handler(self, data):
@@ -252,4 +255,5 @@ class UcvRobotPerception:
                 self._route_number = 3
             else:
                 self._route_number = 4
+        rospy.logdebug(f'route = {self._route_number}')
         return self._route_number
