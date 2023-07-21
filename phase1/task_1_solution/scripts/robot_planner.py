@@ -251,8 +251,6 @@ class UcvRobotPlanner:
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
         self.enqueue_action(UcvSteppedActionPlan(x=0.125 * scale, theta=alpha * 0.1, steps=10))
         self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
-        #self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0.0, steps=10))
-        #self.enqueue_action(UcvSteppedActionPlan(x=0.0, theta=0.0, steps=1))
 
         return self._resolve_enqueued_actions()
 
@@ -307,7 +305,9 @@ class UcvRobotPlanner:
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
                 self.enqueue_action(UcvSteppedActionPlan(x=0.175, theta=0, steps=10))
                 self.enqueue_action(UcvSteppedActionPlan(x=0, theta=0, steps=1))
+
                 self._has_turned_first_row = True
+
                 return self._resolve_enqueued_actions()
         return None
 
@@ -352,4 +352,5 @@ class UcvRobotPlanner:
 
         if (turn := self._make_turn(**kwargs)) is not None:
             return turn
+
         return self._move_forward(**kwargs)
