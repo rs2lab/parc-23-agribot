@@ -27,24 +27,20 @@ class UcvRobotAgent:
             control=self.control,
         )
 
-    def _log(self, message):
-        if self.debug is True:
-            rospy.logdebug(message)
-
     def _on_shutdown(self):
         self.control.stop()
 
     def run(self):
         """Continuously execute the agent to achieve the goal."""
-        rospy.logdebug(f'-- Initializing {self._node_id!r} node...')
+        rospy.loginfo(f'-- Initializing {self._node_id!r} node...')
 
         try:
             while not rospy.is_shutdown():
                 self.execute()
         except rospy.exceptions.ROSInterruptException:
-            rospy.logdebug('-- Received interrupt signal')
+            rospy.loginfo('-- Received interrupt signal')
 
-        rospy.logdebug(f'-- Terminating {self._node_id!r} node.')
+        rospy.loginfo(f'-- Terminating {self._node_id!r} node.')
 
     def execute(self):
         """Execute the plan using control mechanisms to achieve the goal."""
