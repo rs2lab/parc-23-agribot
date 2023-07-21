@@ -1,12 +1,8 @@
 import rospy
-import time
 
 from geometry_msgs.msg import Twist
-
-from robot_planner import (
-    UcvTemporalActionPlan,
-    UcvSteppedActionPlan,
-)
+from helpers import ZeroTwist
+from time import time
 
 
 class UcvRobotControl:
@@ -17,7 +13,7 @@ class UcvRobotControl:
             '/cmd_vel',
             Twist,
             queue_size=queue_size,
-            latch=latch
+            latch=latch,
         )
 
     @property
@@ -28,42 +24,19 @@ class UcvRobotControl:
         """Set the publish rate `hz` in hertz."""
         self.rate = rospy.Rate(hz)
 
-    def publish_cmd_vel(self, twist, secs=0):
-        """Publish a `twist` command to the command vel topic for `secs` seconds."""
-        now = time.time()
-        sep = 0
-        while secs == 0 or (sep := time.time() - now) < secs:
-            rospy.logdebug(
-                'publishing cmd vel: linear.x = %f, anguler.z = %f, timelapse = %f s / %f s'
-                % (twist.linear.x, twist.angular.z, sep, secs)
-            )
-
-            self._cmd_vel_pub.publish(twist)
-            if secs == 0: # should execute only once
-                break
-            self.rate.sleep()
-
-    def publish_cmd_vel_by_steps(self, twist, steps):
-        """This will garantee that a command will be executes on `steps` times."""
-        for e in range(steps):
-            rospy.logdebug(
-                'publishing to cmd vel: linear.x = %f, angular.z = %f, step = %d / %d'
-                % (twist.linear.x, twist.angular.z, e + 1, steps)
-            )
-            self._cmd_vel_pub.publish(twist)
-            self.rate.sleep()
+    def publish_cmd_vel(self, twist):
+        """Publish a `twist` command to the command vel topic."""
+        rospy.logdebug(
+            'publishing cmd vel: linear.x = %f, angular.z = %f'
+            % (twist.linear.x, twist.angular.z)
+        )
+        self.cmd_vel_pub.publish(twist)
+        self.rate.sleep()
 
     def stop(self):
         """Sets all variables responsible for the movement of the
         robot to zero"""
-        cmd = Twist()
-        cmd.linear.x = 0.0
-        cmd.linear.y = 0.0
-        cmd.linear.z = 0.0
-        cmd.angular.x = 0.0
-        cmd.angular.y = 0.0
-        cmd.angular.z = 0.0
-        self.publish_cmd_vel(cmd, 0)
+        self.publish_cmd_vel(ZeroTwist())
 
     def move_regular(self, x=0, theta=0, secs=1):
         """Execute a simple move command in the robot.
@@ -76,11 +49,14 @@ class UcvRobotControl:
         twist = Twist()
         twist.linear.x = x
         twist.angular.z = theta
-        self.publish_cmd_vel(twist, secs)
+
+        start = time()
+        while (time() - start) < secs:
+            self.publish_cmd_vel(twist)
 
     def execute_plan(self, plan):
         """Execute a given plan."""
-        if isinstance(plan, UcvTemporalActionPlan):
-            self.publish_cmd_vel(plan.to_twist(), secs=plan.secs)
-        elif isinstance(plan, UcvSteppedActionPlan):
-            self.publish_cmd_vel_by_steps(plan.to_twist(), steps=plan.steps)
+        plan.init()
+        while plan.has_next_step():
+            plan.consume_step(self.publish_cmd_vel)
+        plan.finish()

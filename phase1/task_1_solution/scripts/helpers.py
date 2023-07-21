@@ -1,8 +1,8 @@
 import enum
-
 import numpy as np
 
 from collections import deque
+from geometry_msgs.msg import Twist
 
 
 class RotationType(enum.Enum):
@@ -88,3 +88,13 @@ class BasicGeoPos:
                 longitude=self.lon - pos.lon,
             )
         return self
+    
+class ZeroTwist(Twist):
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
+        self.linear.x = 0.0
+        self.linear.y = 0.0
+        self.linear.z = 0.0
+        self.angular.x = 0.0
+        self.angular.y = 0.0
+        self.angular.z = 0.0

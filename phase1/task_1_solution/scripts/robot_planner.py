@@ -4,8 +4,8 @@ import ruler
 
 import numpy as np
 
-from geometry_msgs.msg import Twist
 from functools import reduce
+from plan import UcvSteppedActionPlan
 
 from constants import (
     SAFEST_BARN_TURN_DISTANCE,
@@ -15,7 +15,6 @@ from constants import (
     FRONT_VISION_LEFT_POINT,
     FRONT_VISION_RIGHT_POINT,
     FRONT_MASK_03,
-    LASER_THETA,
 )
 
 from helpers import (
@@ -23,62 +22,6 @@ from helpers import (
     BasicQueue,
     RotationType,
 )
-
-
-class UcvActionPlan:
-    def __init__(self, x, theta):
-        self._x = x
-        self._theta = theta
-
-    @property
-    def x(self):
-        return self._x
-
-    @property
-    def theta(self):
-        return self._theta
-
-    def to_twist(self):
-        twist = Twist()
-        twist.linear.x = self.x
-        twist.angular.z = self.theta
-        return twist
-
-
-class UcvTemporalActionPlan(UcvActionPlan):
-    def __init__(self, x, theta, secs=0):
-        super().__init__(x, theta)
-        self._secs = secs
-
-    @property
-    def secs(self):
-        return self._secs
-
-    @classmethod
-    def from_twist(cls, twist, secs=0):
-        return UcvTemporalActionPlan(
-            theta=twist.angular.z,
-            x=twist.linear.x,
-            secs=secs,
-        )
-
-
-class UcvSteppedActionPlan(UcvActionPlan):
-    def __init__(self, x, theta, steps=1):
-        super().__init__(x, theta)
-        self._steps = steps
-
-    @property
-    def steps(self):
-        return self._steps
-
-    @classmethod
-    def from_twist(cls, twist, steps=1):
-        return UcvTemporalActionPlan(
-            theta=twist.angular.z,
-            x=twist.linear.x,
-            steps=steps,
-        )
 
 
 class UcvRobotPlanner:
