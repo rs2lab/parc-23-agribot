@@ -10,10 +10,15 @@ from robot_planner import (
 
 
 class UcvRobotControl:
-    def __init__(self, rate = 10, latch=False, queue_size=10, debug=False):
-        self.debug = debug
+    def __init__(self, rate = 10, latch = False, queue_size = 10):
         self.rate = rospy.Rate(rate)
-        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=queue_size, latch=latch)
+
+        self._cmd_vel_pub = rospy.Publisher(
+            '/cmd_vel',
+            Twist,
+            queue_size=queue_size,
+            latch=latch
+        )
 
     @property
     def cmd_vel_pub(self):
@@ -28,11 +33,10 @@ class UcvRobotControl:
         now = time.time()
         sep = 0
         while secs == 0 or (sep := time.time() - now) < secs:
-            if self.debug is True:
-                rospy.loginfo(
-                    'publishing cmd vel: linear.x = %f, anguler.z = %f, timelapse = %f s / %f s'
-                    % (twist.linear.x, twist.angular.z, sep, secs)
-                )
+            rospy.logdebug(
+                'publishing cmd vel: linear.x = %f, anguler.z = %f, timelapse = %f s / %f s'
+                % (twist.linear.x, twist.angular.z, sep, secs)
+            )
 
             self._cmd_vel_pub.publish(twist)
             if secs == 0: # should execute only once
@@ -42,11 +46,10 @@ class UcvRobotControl:
     def publish_cmd_vel_by_steps(self, twist, steps):
         """This will garantee that a command will be executes on `steps` times."""
         for e in range(steps):
-            if self.debug is True:
-                rospy.loginfo(
-                    'publishing to cmd vel: linear.x = %f, angular.z = %f, step = %d / %d'
-                    % (twist.linear.x, twist.angular.z, e + 1, steps)
-                )
+            rospy.logdebug(
+                'publishing to cmd vel: linear.x = %f, angular.z = %f, step = %d / %d'
+                % (twist.linear.x, twist.angular.z, e + 1, steps)
+            )
             self._cmd_vel_pub.publish(twist)
             self.rate.sleep()
 

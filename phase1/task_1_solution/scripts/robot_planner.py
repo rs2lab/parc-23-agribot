@@ -82,9 +82,7 @@ class UcvSteppedActionPlan(UcvActionPlan):
 
 
 class UcvRobotPlanner:
-    def __init__(self, control, perception, debug=False):
-        self.debug = debug
-
+    def __init__(self, control, perception):
         self._control = control
         self._perception = perception
 
@@ -262,9 +260,9 @@ class UcvRobotPlanner:
         """Analyse the laser and other sensors to see if it should turn left or right.
         Returns `(rho, theta)` or `None`"""
         if laser_scan_state is not None:
-            rospy.loginfo(f'laser front view fill rate = {laser_front_view_fill_rate}')
-            rospy.loginfo(f'closest laser front distance = {closest_laser_dist}')
-            rospy.loginfo(f'closest laser front angle = {closest_laser_angle}')
+            rospy.logdebug(f'laser front view fill rate = {laser_front_view_fill_rate}')
+            rospy.logdebug(f'closest laser front distance = {closest_laser_dist}')
+            rospy.logdebug(f'closest laser front angle = {closest_laser_angle}')
 
             groute = self._perception.guess_route_number()
             switch = True if groute in (1, 3) else False
@@ -273,16 +271,16 @@ class UcvRobotPlanner:
 
             safe_distance = SAFEST_BARN_TURN_DISTANCE if switch else SAFEST_CAR_TURN_DISTANCE
 
-            rospy.loginfo('Cum X == {}'.format(self._cum_x))
+            rospy.logdebug('Cum X == {}'.format(self._cum_x))
             if front_theta == 0 and laser_front_view_fill_rate > 0.35 and self._cum_x > 124 and (self._cum_x > 127.5 or closest_laser_dist < safe_distance):
                 self._cum_x = 0 # reset
                 if self._has_turned_first_row and self._has_turned_second_row:
-                    rospy.loginfo('Goal reach, has finished the route!')
+                    rospy.logdebug('Goal reach, has finished the route!')
                     return UcvSteppedActionPlan(x=0, theta=0, steps=1)
                 if not self._last_actions_memory.empty():
                     theta_dev = -np.mean(self._last_actions_memory.all())
 
-                    rospy.loginfo(f'applying theta dev recovery = {theta_dev}')
+                    rospy.logdebug(f'applying theta dev recovery = {theta_dev}')
 
                     self._last_actions_memory.clear()
                     self.enqueue_action(UcvSteppedActionPlan(x=0, theta=theta_dev * 0.1, steps=10))
@@ -295,7 +293,7 @@ class UcvRobotPlanner:
 
                 turn = direction.value
                 side = 'left' if direction == RotationType.ANTICLOCKWISE else 'right'
-                rospy.loginfo(f'Time to make a turn to the {side} side!')
+                rospy.logdebug(f'Time to make a turn to the {side} side!')
 
                 scale = 0.6 if self._has_turned_first_row else 1
 

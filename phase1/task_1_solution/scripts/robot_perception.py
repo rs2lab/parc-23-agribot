@@ -33,8 +33,6 @@ class UcvSensorType(enum.Enum):
 
 class UcvRobotPerception:
     def __init__(self, debug = False):
-        self.debug = debug
-
         self._left_camera_state = None
         self._right_camera_state = None
         self._front_camera_state = None
