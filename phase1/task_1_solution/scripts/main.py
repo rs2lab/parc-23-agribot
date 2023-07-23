@@ -3,7 +3,12 @@ import os
 
 from robot_agent import UcvRobotAgent
 
-DEBUG = os.getenv('DEBUG', default=False)
+DEBUG = False
+
+try:
+    DEBUG = bool(os.getenv('DEBUG', DEBUG))
+except:
+    pass
 
 if __name__ == '__main__':
     agent = UcvRobotAgent(debug=DEBUG)
