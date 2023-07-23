@@ -96,3 +96,13 @@ class UcvSteppedActionPlan(UcvActionPlan):
     def consume_step(self, fn):
         self._current_step += 1
         super().consume_step(fn)
+
+
+class UcvEffectiveStopActionPlan(UcvActionPlan):
+    """This will make the vehicle stop forever while the program
+    is running."""
+    def __init__(self):
+        super().__init__(0, 0)
+
+    def has_next_step(self):
+        return True
