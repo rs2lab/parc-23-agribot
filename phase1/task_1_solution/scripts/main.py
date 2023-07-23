@@ -11,5 +11,7 @@ except:
     pass
 
 if __name__ == '__main__':
+    # To see debug info run this script with:
+    # ```DEBUG=1 ./main.py``` or ```DEBUG=1 python3 main.py``` 
     agent = UcvRobotAgent(debug=DEBUG)
     agent.run()

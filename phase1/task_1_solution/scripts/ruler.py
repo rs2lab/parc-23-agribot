@@ -67,11 +67,11 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
             xr, yr = FRONT_VISION_RIGHT_POINT + (160, 0)
             dr = hidden * point_distance(xr, yr, *FRONT_VISION_RIGHT_POINT)
 
-        num = point_distance(xl, yl, xr, yr)
-        num = np.log(num) if num > np.e else num
+        denum = point_distance(xl, yl, xr, yr)
+        denum = np.log(denum) if denum > np.e else denum
 
-        if np.abs(denum := dl - dr) > 1:
-            return (np.pi / 2) * np.tanh((denum / num ** 2))
+        if np.abs(num := dl - dr) > 1 and denum != 0:
+            return (np.pi / 2) * np.tanh((num / denum ** 2))
         return 0
 
 
