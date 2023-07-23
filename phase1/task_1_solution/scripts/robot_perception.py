@@ -55,10 +55,10 @@ class UcvRobotPerception:
             UcvSensorType.CMD_VEL: [],
         }
 
+        rospy.Subscriber(UcvSensorType.GPS.value, NavSatFix, self._gps_state_update_handler)
         rospy.Subscriber(UcvSensorType.CAM_LEFT.value, Image, self._left_camera_state_update_handler)
         rospy.Subscriber(UcvSensorType.CAM_RIGHT.value, Image, self._right_camera_state_update_handler)
         rospy.Subscriber(UcvSensorType.CAM_FRONT.value, Image, self._front_camera_state_update_handler)
-        rospy.Subscriber(UcvSensorType.GPS.value, NavSatFix, self._gps_state_update_handler)
         rospy.Subscriber(UcvSensorType.LASER_SCAN.value, LaserScan, self._laser_scan_state_update_handler)
         rospy.Subscriber(UcvSensorType.CMD_VEL.value, Twist, self._cmd_vel_state_update_handler)
 
@@ -233,23 +233,26 @@ class UcvRobotPerception:
     def guess_first_rotation_direction(self):
         """Returns the type of the rotation for the first row."""
         if self._first_row_rotation is None:
-            diff = self.goal_pos.sub(self.initial_pos)
-            if (diff.lat < 0 and diff.lon > 0) or (diff.lat > 0 and diff.lon < 0):
-                self._first_row_rotation = RotationType.ANTICLOCKWISE
-            else:
+            route_number = self.guess_route_number()
+            if route_number in (3, 4):
                 self._first_row_rotation = RotationType.CLOCKWISE
+            else:
+                self._first_row_rotation = RotationType.ANTICLOCKWISE
         return self._first_row_rotation
 
     def guess_route_number(self):
         """Tries to guess the number of the route."""
         if self._route_number is None:
             diff = self.goal_pos.sub(self.initial_pos)
-            if diff.lat < 0 and diff.lon > 0:
-                self._route_number = 1
-            elif diff.lat > 0 and diff.lon < 0:
-                self._route_number = 2
+            if diff.lat > 0 and diff.lon > 0:
+                self._route_number = 4
             elif diff.lat < 0 and diff.lon < 0:
                 self._route_number = 3
-            else:
-                self._route_number = 4
+            elif diff.lat > 0 and diff.lon < 0:
+                self._route_number = 2
+            elif diff.lat < 0 and diff.lon > 0:
+                self._route_number = 1
+            else: # diff.lat == 0 and diff.lon == 0
+                # Set route to number 1 by default
+                self._route_number = 1
         return self._route_number
