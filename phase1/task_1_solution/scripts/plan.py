@@ -66,11 +66,8 @@ class UcvTemporalActionPlan(UcvActionPlan):
 
     def has_next_step(self):
         self._secs_spent = time() - self._start_time
-        return self._secs == 0 or self._secs_spent < self._secs
-    
-    def consume_step(self, fn):
-        
-        super().consume_step(fn)
+        return self._secs_spent < self._secs
+
 
 class UcvSteppedActionPlan(UcvActionPlan):
     def __init__(self, x, theta, steps=1):
