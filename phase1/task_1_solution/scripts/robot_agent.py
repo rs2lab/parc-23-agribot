@@ -12,7 +12,7 @@ class UcvRobotAgent:
 
         rospy.init_node(node_id, anonymous=False, log_level=rospy.DEBUG if debug else rospy.INFO)
         rospy.on_shutdown(self._on_shutdown)
-        rospy.logdebug(f'Starting Task 1 Solver Agent {self._node_id!r}')
+        rospy.logdebug(f'-- Started Task 1 Solver Agent {self._node_id!r}')
 
         self.perception = UcvRobotPerception()
 
