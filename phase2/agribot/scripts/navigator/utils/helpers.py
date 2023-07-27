@@ -56,7 +56,7 @@ class BasicQueue(deque):
 class TwistZero(Twist):
     """Used to send a stop signal to the cmd vel topic."""
 
-    def __init__(self, *args, **kwds):
+    def __init__(self, *args, **kwds) -> None:
         super().__init__(*args, **kwds)
         self.linear.x = 0.0
         self.linear.y = 0.0

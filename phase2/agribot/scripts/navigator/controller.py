@@ -2,7 +2,7 @@ import rospy
 import time
 
 from geometry_msgs.msg import Twist
-from .utils.constants import CMD_VEL_TOPIC
+from .utils import constants as cnst
 from .utils import TwistZero
 from .utils import Action
 
@@ -12,7 +12,7 @@ class AgribotController:
         self._pub_rate = 10
         self._rate = rospy.Rate(pub_rate)
         self._cmd_vel = rospy.Publisher(
-            CMD_VEL_TOPIC,
+            cnst.CMD_VEL_TOPIC,
             Twist,
             **kwargs
         )
