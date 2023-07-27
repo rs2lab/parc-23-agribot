@@ -1,7 +1,7 @@
 import os
+import navigator.utils.constants as cnst
 
-from navigator.agent import AgribotAgent
-from navigator.utils.constants import NODE_DEFAULT_NAME
+from navigator import AgribotAgent
 
 
 debug = False
@@ -15,5 +15,5 @@ except:
 if __name__ == '__main__':
     # To see debug info run this script with:
     # ```DEBUG=1 ./main.py``` or ```DEBUG=1 python3 main.py```
-    agent = AgribotAgent(debug=debug, name_id=NODE_DEFAULT_NAME)
+    agent = AgribotAgent(debug=debug, name_id=cnst.NODE_DEFAULT_NAME)
     agent.run()

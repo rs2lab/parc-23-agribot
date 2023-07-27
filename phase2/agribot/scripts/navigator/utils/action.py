@@ -99,7 +99,7 @@ class SteppedAction(Action):
         super().consume_step(fn)
 
 
-class EternalStopAction(Action):
+class EternalStoppingAction(Action):
     """This will make the vehicle stop forever while the program
     is running."""
     def __init__(self):
