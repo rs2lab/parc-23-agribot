@@ -15,7 +15,7 @@ class SensorType(enum.Enum):
     LEFT_CAM = '/left_camera/image_raw'
     FRONT_ZED_ODOM = '/front/zed_nodelet_front/odom'
     ODOM = '/odom'
-    LASER = '/scan'
+    LASER_SCAN = '/scan'
 
 
 class AgribotPerceiver:
@@ -33,10 +33,10 @@ class AgribotPerceiver:
         rospy.Subscriber(SensorType.POINT_CLOUD.value, PointCloud2, self._point_cloud_state_update_handler)
         rospy.Subscriber(SensorType.LASER_SCAN.value, LaserScan, self._laser_scan_state_update_handler)
         rospy.Subscriber(SensorType.FRONT_ZED_ODOM.value, Odometry, self._front_zed_odom_state_update_handler)
-        rospy.Subscriber(SensorType.FRONT_CAM.value, Image, self._front_cam_state_state_update_handler)
+        rospy.Subscriber(SensorType.FRONT_CAM.value, Image, self._front_cam_state_update_handler)
         rospy.Subscriber(SensorType.LEFT_CAM.value, Image, self._left_cam_state_update_handler)
 
-    def register_state_update_callback(self, sensor_type: SensorType, callback: function) -> None:
+    def register_state_update_callback(self, sensor_type: SensorType, callback) -> None:
         """Add callbacks that will be called when the state of one the topics we listen to
         is changed."""
         if sensor_type in self._state_update_cb_registry:

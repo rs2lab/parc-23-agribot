@@ -11,9 +11,11 @@ class AgribotController:
     def __init__(self, pub_rate: int = 10, **kwargs) -> None:
         self._pub_rate = 10
         self._rate = rospy.Rate(pub_rate)
+        queue_size = kwargs['queue_size'] if 'queue_size' in kwargs else 10
         self._cmd_vel = rospy.Publisher(
             cnst.CMD_VEL_TOPIC,
             Twist,
+            queue_size=queue_size,
             **kwargs
         )
 

@@ -13,12 +13,13 @@ class AgribotAgent:
         log_level = rospy.DEBUG if debug else rospy.INFO
 
         rospy.init_node(self._node_id, anonymous=False, log_level=log_level)
-        rospy.logdebug(f'-- Node {self._node_id!r} initialized')
-        rospy.on_shutdown(self._on_shutdown)
+        rospy.loginfo(f'-- Node {self._node_id!r} initialized')
 
         self._percept = AgribotPerceiver()
         self._plan = AgribotPlanner(perception=self._percept)
         self._control = AgribotController()
+
+        rospy.on_shutdown(self._on_shutdown)
 
     def _on_shutdown(self) -> None:
         self._control.stop()
