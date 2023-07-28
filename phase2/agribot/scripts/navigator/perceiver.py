@@ -14,7 +14,7 @@ class SensorType(enum.Enum):
     LASER = '/scan'
 
 
-class AgribotPerceptor:
+class AgribotPerceiver:
     def __init__(self) -> None:
         self._point_cloud = None
         self._laser_scan = None

@@ -1,13 +1,13 @@
 import rospy
 
-from .perceptor import AgribotPerceptor
+from . import AgribotPerceiver
 from .utils import SteppedAction, Action
 from .utils import ForgetfulMemory, BasicQueue
 
 
 class AgribotPlanner:
-    def __init__(self, perception: AgribotPerceptor) -> None:
-        self._perception = perception
+    def __init__(self, perception: AgribotPerceiver) -> None:
+        self._percept = perception
         self._last_actions_memory = ForgetfulMemory()
         self._next_actions_queue = BasicQueue()
 

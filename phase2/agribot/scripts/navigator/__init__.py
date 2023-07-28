@@ -1,4 +1,4 @@
 from .agent import *
 from .controller import *
-from .perceptor import *
+from .perceiver import *
 from .planner import *

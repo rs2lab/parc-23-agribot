@@ -1,6 +1,6 @@
 import rospy
 
-from . import AgribotPlanner, AgribotController, AgribotPerceptor
+from . import AgribotPlanner, AgribotController, AgribotPerceiver
 
 
 class AgribotAgent:
@@ -14,12 +14,9 @@ class AgribotAgent:
         rospy.logdebug(f'-- Node {self._node_id!r} initialized')
         rospy.on_shutdown(self._on_shutdown)
 
+        self._percept = AgribotPerceiver()
+        self._plan = AgribotPlanner(perception=self._percept)
         self._control = AgribotController()
-        self._perception = AgribotPerceptor()
-
-        self._plan = AgribotPlanner(
-            perception=self._perception,
-        )
 
     def _on_shutdown(self) -> None:
         self._control.stop()
