@@ -11,7 +11,7 @@ fi
 
 
 ## -- Running the Agent --
-ROS_IP=$(hostname -I | tr -d [:blank:]) ROS_MASTER_URI='' python3 main.py
+ROS_IP=$(hostname -I | tr -d [:blank:]) ROS_MASTER_URI=http://192.168.50.13:11311 python3 main.py
 
 
 if [[ $? -ne 0 ]]
