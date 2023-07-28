@@ -1,6 +1,8 @@
 import rospy
 
-from . import AgribotPlanner, AgribotController, AgribotPerceiver
+from .planner import AgribotPlanner
+from .controller import AgribotController
+from .perceiver import AgribotPerceiver
 
 
 class AgribotAgent:

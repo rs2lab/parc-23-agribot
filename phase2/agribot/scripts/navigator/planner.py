@@ -1,6 +1,6 @@
 import rospy
 
-from . import AgribotPerceiver
+from .perceiver import AgribotPerceiver
 from .utils import SteppedAction, Action
 from .utils import ForgetfulMemory, BasicQueue
 

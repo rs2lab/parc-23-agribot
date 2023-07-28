@@ -1,7 +1,6 @@
 import enum
 import rospy
 
-from types import FunctionType
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import (
     PointCloud2,
@@ -37,7 +36,7 @@ class AgribotPerceiver:
         rospy.Subscriber(SensorType.FRONT_CAM.value, Image, self._front_cam_state_state_update_handler)
         rospy.Subscriber(SensorType.LEFT_CAM.value, Image, self._left_cam_state_update_handler)
 
-    def register_state_update_callback(self, sensor_type: SensorType, callback) -> None:
+    def register_state_update_callback(self, sensor_type: SensorType, callback: function) -> None:
         """Add callbacks that will be called when the state of one the topics we listen to
         is changed."""
         if sensor_type in self._state_update_cb_registry:
