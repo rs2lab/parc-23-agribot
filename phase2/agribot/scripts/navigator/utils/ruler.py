@@ -1,8 +1,9 @@
 import numpy as np
-import .vision as v
+
+from . import vision as v
 
 
-def line2point_dist(line, dist) -> float:
+def line2point_dist(line, point) -> float:
     x1, y1, x2, y2 = line
     x0, y0 = point
     mod = np.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1))
@@ -63,16 +64,16 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
     (xr, yr), dr = (None, None), None
 
     if closest_front_left_line is not None:
-        (xl, yl), dl = closest_point(FRONT_VISION_LEFT_POINT, closest_front_left_line.reshape(2, 2))
+        (xl, yl), dl = closest_point(v.FRONT_CAM_LEFT_POINT_REF, closest_front_left_line.reshape(2, 2))
     else:
-        xl, yl = FRONT_VISION_LEFT_POINT - (160, 0)
-        dl = hidden * point2point_dist(xl, yl, *FRONT_VISION_LEFT_POINT)
+        xl, yl = v.FRONT_CAM_LEFT_POINT_REF - (160, 0)
+        dl = hidden * point2point_dist(xl, yl, *v.FRONT_CAM_LEFT_POINT_REF)
 
     if closest_front_right_line is not None:
-        (xr, yr), dr = closest_point(FRONT_VISION_RIGHT_POINT, closest_front_right_line.reshape(2, 2))
+        (xr, yr), dr = closest_point(v.FRONT_CAM_RIGHT_POINT_REF, closest_front_right_line.reshape(2, 2))
     else:
-        xr, yr = FRONT_VISION_RIGHT_POINT + (160, 0)
-        dr = hidden * point2point_dist(xr, yr, *FRONT_VISION_RIGHT_POINT)
+        xr, yr = v.FRONT_CAM_RIGHT_POINT_REF + (160, 0)
+        dr = hidden * point2point_dist(xr, yr, *v.FRONT_CAM_RIGHT_POINT_REF)
 
     denum = point2point_dist(xl, yl, xr, yr)
     denum = np.log(denum) if denum > np.e else denum
@@ -92,14 +93,14 @@ def calculate_front_theta(front_cam_state, **kwargs) -> float:
     front_plant_theta = front_shift_transfer_function(
         closest_front_left_line=v.apply_line_detection(
             front_cam_image,
-            detect_fn=detect_lanes,
+            detect_fn=v.detect_lanes,
             reduce_fn=define_line_reducer_on_point(
                 point=v.FRONT_CAM_LEFT_POINT_REF,
             )
         ),
         closest_front_right_line=v.apply_line_detection(
             front_cam_image,
-            detect_fn=detect_lanes,
+            detect_fn=v.detect_lanes,
             reduce_fn=define_line_reducer_on_point(
                 point=v.FRONT_CAM_RIGHT_POINT_REF,
             ),

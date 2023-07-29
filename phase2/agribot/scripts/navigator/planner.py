@@ -1,7 +1,7 @@
 import rospy
+import numpy as np
 
-import .utils.vision as v
-import .utils.ruler as r
+from .utils import ruler as r
 
 from .perceiver import AgribotPerceiver
 from .utils import SteppedAction, SingleStepStopAction, Action
@@ -32,7 +32,7 @@ class AgribotPlanner:
         snapshot = self._percept.snapshot()
 
         snapshot['laser_scan_angles'] = r.laser_angles(snapshot['laser_scan_state'])
-        snapshot['front_theta'] = r.calculate_front_theta(**kwargs)
+        snapshot['front_theta'] = r.calculate_front_theta(**snapshot)
 
         return snapshot
 
