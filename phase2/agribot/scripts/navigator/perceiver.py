@@ -2,6 +2,9 @@ import enum
 import rospy
 
 from nav_msgs.msg import Odometry
+
+from geometry_msgs.msg import Twist
+
 from sensor_msgs.msg import (
     PointCloud2,
     Image,
@@ -35,6 +38,32 @@ class AgribotPerceiver:
         rospy.Subscriber(SensorType.FRONT_ZED_ODOM.value, Odometry, self._front_zed_odom_state_update_handler)
         rospy.Subscriber(SensorType.FRONT_CAM.value, Image, self._front_cam_state_update_handler)
         rospy.Subscriber(SensorType.LEFT_CAM.value, Image, self._left_cam_state_update_handler)
+
+        self._cummulative_lin_x_move = 0
+        self._cummulative_lin_y_move = 0
+        self._cummulative_ang_z_rot = 0
+
+    def record_twist_move(self, twist: Twist) -> None:
+        self._cummulative_lin_x_move += twist.linear.x
+        self._cummulative_lin_y_move += twist.linear.y
+        self._cummulative_ang_z_rot += twist.angular.z
+
+    def reset_cummulative_moves(self) -> None:
+        self._cummulative_lin_x_move = 0
+        self._cummulative_lin_y_move = 0
+        self._cummulative_ang_z_rot = 0
+
+    @property
+    def cum_lin_x(self) -> float:
+        return self._cummulative_lin_x_move
+
+    @property
+    def cum_lin_y(self) -> float:
+        return self._cummulative_lin_y_move
+
+    @property
+    def cum_ang_z(self) -> float:
+        return self._cummulative_ang_z_rot
 
     def register_state_update_callback(self, sensor_type: SensorType, callback) -> None:
         """Add callbacks that will be called when the state of one the topics we listen to
@@ -98,3 +127,15 @@ class AgribotPerceiver:
     def _left_cam_state_update_handler(self, data) -> None:
         self._left_cam_state = data
         self._trigger_callbacks(SensorType.LEFT_CAM, data)
+
+    def snapshot(self) -> dict:
+        """Returns a snapshpt of the perceived state of the environment in the specific instant
+        to guarantee consistence of the data when processing them together."""
+        return {
+            'front_cam_state': self._percept.front_cam_state,
+            'left_cam_state': self._percept.left_cam_state,
+            'laser_scan_state': self._percept.laser_scan_state,
+            'front_zed_odom_state': self._percept.front_zed_odom_state,
+            'point_cloud_state': self._percept.point_cloud_state,
+            'general_odom_state': self._percept.odom_state,
+        }

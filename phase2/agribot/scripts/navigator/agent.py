@@ -17,7 +17,7 @@ class AgribotAgent:
 
         self._percept = AgribotPerceiver()
         self._plan = AgribotPlanner(perception=self._percept)
-        self._control = AgribotController()
+        self._control = AgribotController(perception=self._percept)
 
         rospy.on_shutdown(self._on_shutdown)
 

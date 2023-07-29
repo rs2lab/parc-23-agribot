@@ -29,7 +29,11 @@ class AgribotPlanner:
         self._next_actions_queue.enqueue(action)
 
     def _process_env_perception(self) -> dict:
-        return {} # TODO
+        snapshot = self._percept.snapshot()
+
+        snapshot['laser_scan_angles'] = r.laser_angles(snapshot['laser_scan_state'])
+
+        return snapshot
 
     def plan_action(self) -> Action:
         """Analyse the information from the environment and determine the

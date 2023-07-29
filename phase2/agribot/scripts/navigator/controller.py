@@ -2,15 +2,17 @@ import rospy
 import time
 
 from geometry_msgs.msg import Twist
+from .perceiver import AgribotPerceiver
 from .utils import constants as cnst
 from .utils import TwistZero
 from .utils import Action
 
 
 class AgribotController:
-    def __init__(self, pub_rate: int = 10, **kwargs) -> None:
-        self._pub_rate = 10
-        self._rate = rospy.Rate(pub_rate)
+    def __init__(self, perception: AgribotPerceiver, pub_rate: int = 10, **kwargs) -> None:
+        self._percept = perception
+        self._pub_rate = pub_rate
+        self._rate = rospy.Rate(self._pub_rate)
         queue_size = kwargs['queue_size'] if 'queue_size' in kwargs else 10
         self._cmd_vel = rospy.Publisher(
             cnst.CMD_VEL_TOPIC,
@@ -30,6 +32,7 @@ class AgribotController:
             % (twist.linear.x, twist.angular.z)
         )
         self._cmd_vel.publish(twist)
+        self._percept.record_twist_move(twist)
         self._rate.sleep()
 
     def stop(self) -> None:
