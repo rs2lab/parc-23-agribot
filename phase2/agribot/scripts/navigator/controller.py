@@ -13,6 +13,7 @@ class AgribotController:
         self._percept = perception
         self._pub_rate = pub_rate
         self._rate = rospy.Rate(self._pub_rate)
+        self._received_stop_signal = False
         queue_size = kwargs['queue_size'] if 'queue_size' in kwargs else 10
         self._cmd_vel = rospy.Publisher(
             cnst.CMD_VEL_TOPIC,
@@ -20,6 +21,12 @@ class AgribotController:
             queue_size=queue_size,
             **kwargs
         )
+
+    def activate_stop_signal(self) -> None:
+        self._received_stop_signal = True
+
+    def reset_stop_signal(self) -> None:
+        self._received_stop_signal = False
 
     @property
     def cmd_vel(self) -> rospy.Publisher:
@@ -38,6 +45,7 @@ class AgribotController:
     def stop(self) -> None:
         """Stops the robot's movement."""
         self.pub_cmd_vel(TwistZero())
+        self.activate_stop_signal()
 
     def move_regular(self, x: float = 0, theta: float = 0, secs: float = 1) -> None:
         """Execute a simple move command in the robot.
@@ -57,7 +65,8 @@ class AgribotController:
 
     def execute_action(self, action: Action) -> None:
         """Executes a given action."""
+        self.reset_stop_signal()
         action.init()
-        while action.has_next_step():
+        while action.has_next_step() and not self._received_stop_signal:
             action.consume_step(self.pub_cmd_vel)
         action.finish()
