@@ -132,10 +132,13 @@ class AgribotPerceiver:
         """Returns a snapshpt of the perceived state of the environment in the specific instant
         to guarantee consistence of the data when processing them together."""
         return {
-            'front_cam_state': self._percept.front_cam_state,
-            'left_cam_state': self._percept.left_cam_state,
-            'laser_scan_state': self._percept.laser_scan_state,
-            'front_zed_odom_state': self._percept.front_zed_odom_state,
-            'point_cloud_state': self._percept.point_cloud_state,
-            'general_odom_state': self._percept.odom_state,
+            'front_cam_state': self.front_cam_state,
+            'left_cam_state': self.left_cam_state,
+            'laser_scan_state': self.laser_scan_state,
+            'front_zed_odom_state': self.front_zed_odom_state,
+            'point_cloud_state': self.point_cloud_state,
+            'general_odom_state': self.odom_state,
+            'cum_lin_x': self.cum_lin_x,
+            'cum_lin_y': self.cum_lin_y,
+            'cum_ang_z': self.cum_ang_z,
         }

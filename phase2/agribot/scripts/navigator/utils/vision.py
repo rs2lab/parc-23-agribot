@@ -3,6 +3,10 @@ import cv2
 
 import numpy as np
 
+from cv_bridge import CvBridge
+from functools import reduce
+
+
 FRONT_CAM_IMAGE_WIDTH = 672
 FRONT_CAM_IMAGE_HEIGHT = 376
 
@@ -11,11 +15,24 @@ FRONT_MASK = cv2.imread('../../../images/front-mask02.png', 0)
 BRIGHTNESS_ALPHA_ADJUST = 1.5
 BRIGHTNESS_BETA_ADJUST = 10
 
+FRONT_CAM_LEFT_POINT_REF = np.array((150, 310))
+FRONT_CAM_RIGHT_POINT_REF = np.array((522, 310))
+
+_BRIDGE_OBJ = CvBridge()
+
+
+def imgmsg_to_cv2(imgmsg):
+    return _BRIDGE_OBJ.imgmsg_to_cv2(imgmsg)
+
+
+def cv2_to_imgmsg(img):
+    return _BRIDGE_OBJ.cv2_to_imgmsg(img)
+
 
 # The OpenCV HSV rate is a bit different from the most commonly
 # used rates.
-def cvt_common_hsv_to_opencv_hsv(hsv):
-    return np.array((0.5, 255, 255)) * hsv
+def cvt_common_hsv_to_opencv_hsv(hsv, ch01rate = 8):
+    return np.array((ch01rate, 255, 255)) * hsv
 
 
 LANE_THRESHOLDING_LOWER_BOUND = cvt_common_hsv_to_opencv_hsv((0.055, 0.537, 0.241))
@@ -52,8 +69,8 @@ def detect_color_profile(image, lower_bound, upper_bound, apply_blur = False):
 
 def detect_lanes(image):
     return detect_color_profile(image=image,
-        lower_bound=LANE_THRESHOLDING_LOWER_BOUND - 5,
-        upper_bound=LANE_THRESHOLDING_UPPER_BOUND + 5,
+        lower_bound=LANE_THRESHOLDING_LOWER_BOUND,
+        upper_bound=LANE_THRESHOLDING_UPPER_BOUND,
         apply_blur=False,
     )
 
@@ -72,3 +89,21 @@ def draw_lines_on_image(image, lines, color_rgb = (12, 200, 90)):
             cv2.line(line_image, (x1, y1), (x2, y2), color_rgb, 10)
 
     return cv2.addWeighted(image, 0.8, line_image, 1, 1)
+
+
+def apply_line_detection(self, image, *, detect_fn, reduce_fn=None, crop_fn=None, mask=None):
+    lines = None
+
+    if image is not None:
+        if crop_fn is not None:
+            image = crop_fn(image)
+
+        if mask is not None:
+            image = mask_image(image, mask=mask)
+
+        image = detect_fn(image, apply_hsv=True)
+        lines = hough_lines(image, apply_canny=True)
+
+        if lines is not None and reduce_fn is not None:
+            lines = reduce(reduce_fn, lines.reshape(-1, 4))
+    return lines

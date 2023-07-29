@@ -32,6 +32,7 @@ class AgribotPlanner:
         snapshot = self._percept.snapshot()
 
         snapshot['laser_scan_angles'] = r.laser_angles(snapshot['laser_scan_state'])
+        snapshot['front_theta'] = r.calculate_front_theta(**kwargs)
 
         return snapshot
 
