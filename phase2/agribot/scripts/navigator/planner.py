@@ -4,7 +4,7 @@ import .utils.vision as v
 import .utils.ruler as r
 
 from .perceiver import AgribotPerceiver
-from .utils import SteppedAction, Action
+from .utils import SteppedAction, SingleStepStopAction, Action
 from .utils import ForgetfulMemory, BasicQueue
 
 
@@ -53,8 +53,17 @@ class AgribotPlanner:
     def _make_a_turn(self) -> Action:
         return None # TODO
 
-    def _move_forward(self) -> Action:
-        return None # TODO
+    def _move_forward(self, front_theta) -> Action:
+        theta = r.theta_weighted_sum(front_theta=front_theta)
+        alpha = r.alpha_theta(theta)
+        scale = 0.1 ** np.abs(front_theta)
+
+        self.enqueue_action(SteppedAction(x=0.825 * scale, theta=theta * 0.1, steps=10))
+        self.enqueue_action(SingleStepStopAction())
+        self.enqueue_action(SteppedAction(x=0.175 * scale, theta=alpha * 0.1, steps=10))
+        self.enqueue_action(SingleStepStopAction())
+
+        return self._resolve_enqueued_action()
 
     def _finish_navigation(self) -> Action:
         return None # TODO

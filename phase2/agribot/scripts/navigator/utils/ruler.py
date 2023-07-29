@@ -82,10 +82,6 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
     return 0
 
 
-front_cam_left_line_reducer = define_line_reducer_on_point(
-    point=v.FRONT_CAM_LEFT_POINT_REF,
-)
-
 def calculate_front_theta(front_cam_state, **kwargs) -> float:
     front_cam_image = None if not 'front_cam_image' in kwargs else kwargs['front_cam_image']
 
@@ -112,3 +108,24 @@ def calculate_front_theta(front_cam_state, **kwargs) -> float:
     )
 
     return front_plant_theta
+
+
+def theta_weighted_sum(*, front_theta, lateral_theta=0, lateral_weight = 0.65, front_weight = 0.35, last_theta=None):
+    """Sums the different theta values according to a given weight for each theta"""
+    theta = 0
+
+    if lateral_theta != 0 and front_theta != 0:
+        theta = lateral_theta * lateral_weight + front_theta * front_weight
+    else:
+        theta = lateral_theta + front_theta
+
+    return theta
+
+
+def alpha_theta(theta, last_theta=None):
+    """Returns the angle in the oposite direction of theta that will be used
+    to adjust the route after applying a theta angular rotation."""
+    trace = 0
+    if last_theta is not None:
+        trace = last_theta / (12 * np.e)
+    return -theta / 16 + trace

@@ -109,3 +109,8 @@ class EternalStoppingAction(Action):
 
     def has_next_step(self) -> bool:
         return True
+
+
+class SingleStepStopAction(SteppedAction):
+    def __init__(self) -> None:
+        super().__init__(x=0, theta=0, steps=1)
