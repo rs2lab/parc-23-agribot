@@ -50,13 +50,15 @@ class AgribotPlanner:
             return turn
         return self._move_forward(**kwargs)
 
-    def _make_a_turn(self) -> Action:
+    def _make_a_turn(self, **kwargs) -> Action:
         return None # TODO
 
-    def _move_forward(self, front_theta) -> Action:
+    def _move_forward(self, front_theta, **kwargs) -> Action:
         theta = r.theta_weighted_sum(front_theta=front_theta)
         alpha = r.alpha_theta(theta)
         scale = 0.1 ** np.abs(front_theta)
+
+        rospy.logdebug(f'theta = {theta}, alpha = {alpha}')
 
         self.enqueue_action(SteppedAction(x=0.825 * scale, theta=theta * 0.1, steps=10))
         self.enqueue_action(SingleStepStopAction())
@@ -65,5 +67,5 @@ class AgribotPlanner:
 
         return self._resolve_enqueued_action()
 
-    def _finish_navigation(self) -> Action:
+    def _finish_navigation(self, **kwargs) -> Action:
         return None # TODO

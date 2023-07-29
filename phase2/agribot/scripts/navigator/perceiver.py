@@ -75,8 +75,8 @@ class AgribotPerceiver:
 
     def _trigger_callbacks(self, sensor_type, data) -> None:
         """This triggers all registered callbacks for the specific sensor."""
-        if sensor_type in self._state_update_callback_registry:
-            callbacks = self._state_update_callback_registry[sensor_type]
+        if sensor_type in self._state_update_cb_registry:
+            callbacks = self._state_update_cb_registry[sensor_type]
             for callback in callbacks:
                 callback(data)
 
@@ -106,7 +106,7 @@ class AgribotPerceiver:
 
     def _laser_scan_state_update_handler(self, data) -> None:
         self._laser_scan_state = data
-        self._trigger_callbacks(SensorType.LASER, data)
+        self._trigger_callbacks(SensorType.LASER_SCAN, data)
 
     def _odom_state_update_handler(self, data) -> None:
         self._odom_state = data

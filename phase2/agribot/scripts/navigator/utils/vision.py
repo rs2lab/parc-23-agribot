@@ -91,7 +91,7 @@ def draw_lines_on_image(image, lines, color_rgb = (12, 200, 90)):
     return cv2.addWeighted(image, 0.8, line_image, 1, 1)
 
 
-def apply_line_detection(self, image, *, detect_fn, reduce_fn=None, crop_fn=None, mask=None):
+def apply_line_detection(image, *, detect_fn, reduce_fn=None, crop_fn=None, mask=None):
     lines = None
 
     if image is not None:
