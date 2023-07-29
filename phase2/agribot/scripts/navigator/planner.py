@@ -1,7 +1,9 @@
+import cv2
 import rospy
 import numpy as np
 
 from .utils import ruler as r
+from .utils import vision as v
 
 from .perceiver import AgribotPerceiver
 from .utils import SteppedAction, SingleStepStopAction, Action
@@ -33,6 +35,10 @@ class AgribotPlanner:
 
         snapshot['laser_scan_angles'] = r.laser_angles(snapshot['laser_scan_state'])
         snapshot['front_theta'] = r.calculate_front_theta(**snapshot)
+
+        if 'front_cam_state' in snapshot and snapshot['front_cam_state'] is not None:
+            # image = cv2.imwrite('image.jpg', v.imgmsg_to_cv2(snapshot['front_cam_state']))
+            rospy.logdebug(f'front_theta = {snapshot["front_theta"]}')
 
         return snapshot
 

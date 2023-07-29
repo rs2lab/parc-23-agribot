@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 
 from . import vision as v
@@ -86,9 +87,10 @@ def front_shift_transfer_function(closest_front_left_line, closest_front_right_l
 def calculate_front_theta(front_cam_state, **kwargs) -> float:
     front_cam_image = None if not 'front_cam_image' in kwargs else kwargs['front_cam_image']
 
-    if front_cam_image is not None:
+    if front_cam_image is None and front_cam_state is not None:
         front_cam_image = v.imgmsg_to_cv2(front_cam_state)
-        front_cam_image = v.mask_image(v.FRONT_MASK)
+        front_cam_image = v.adjust_image_brightness(front_cam_image)
+        front_cam_image = v.mask_image(front_cam_image, v.FRONT_MASK)
 
     front_plant_theta = front_shift_transfer_function(
         closest_front_left_line=v.apply_line_detection(

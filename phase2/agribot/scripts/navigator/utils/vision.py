@@ -1,6 +1,5 @@
-import os
 import cv2
-
+import os
 import numpy as np
 
 from cv_bridge import CvBridge
@@ -10,7 +9,7 @@ from functools import reduce
 FRONT_CAM_IMAGE_WIDTH = 672
 FRONT_CAM_IMAGE_HEIGHT = 376
 
-FRONT_MASK = cv2.imread('../../../images/front-mask02.png', 0)
+FRONT_MASK = cv2.imread('../images/front-mask02.png', 0)
 
 BRIGHTNESS_ALPHA_ADJUST = 1.5
 BRIGHTNESS_BETA_ADJUST = 10
@@ -43,8 +42,8 @@ def mask_image(image, mask):
     return cv2.bitwise_and(image, image, mask = mask)
 
 
-def cvt_rgb_to_hsv(image):
-    return cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+def cvt_bgr_to_hsv(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
 
 def adjust_image_brightness(image, alpha = BRIGHTNESS_ALPHA_ADJUST, beta = BRIGHTNESS_BETA_ADJUST):
@@ -67,7 +66,9 @@ def detect_color_profile(image, lower_bound, upper_bound, apply_blur = False):
     return cv2.bitwise_and(image, image, mask=color_mask)
 
 
-def detect_lanes(image):
+def detect_lanes(image, apply_hsv=False):
+    if apply_hsv is True:
+        image = cvt_bgr_to_hsv(image=image)
     return detect_color_profile(image=image,
         lower_bound=LANE_THRESHOLDING_LOWER_BOUND,
         upper_bound=LANE_THRESHOLDING_UPPER_BOUND,
@@ -77,7 +78,7 @@ def detect_lanes(image):
 
 def hough_lines(image, min_line_len = 20, max_line_gap = 20, apply_canny = True):
     if apply_canny is True:
-        image = canny(image, blur_image = True)
+        image = canny(image, apply_blur = True)
     return cv2.HoughLinesP(image, 2, np.pi / 180, 10, np.array([]), min_line_len, max_line_gap)
 
 
@@ -95,6 +96,7 @@ def apply_line_detection(image, *, detect_fn, reduce_fn=None, crop_fn=None, mask
     lines = None
 
     if image is not None:
+        original_image = image
         if crop_fn is not None:
             image = crop_fn(image)
 
@@ -102,7 +104,12 @@ def apply_line_detection(image, *, detect_fn, reduce_fn=None, crop_fn=None, mask
             image = mask_image(image, mask=mask)
 
         image = detect_fn(image, apply_hsv=True)
+
         lines = hough_lines(image, apply_canny=True)
+
+        # if image is not None and lines is not None:
+        #     cv2.imshow('camera', draw_lines_on_image(original_image, lines))
+        #     cv2.waitKey(1)
 
         if lines is not None and reduce_fn is not None:
             lines = reduce(reduce_fn, lines.reshape(-1, 4))
