@@ -93,16 +93,16 @@ def calculate_front_theta(front_cam_state, **kwargs) -> float:
         front_cam_image = v.mask_image(front_cam_image, v.FRONT_MASK)
 
     front_plant_theta = front_shift_transfer_function(
-        closest_front_left_line=v.apply_line_detection(
+        closest_front_left_line=v.make_line_detection(
             front_cam_image,
-            detect_fn=v.detect_lanes,
+            detect_fn=v.detect_front_cam_lanes,
             reduce_fn=define_line_reducer_on_point(
                 point=v.FRONT_CAM_LEFT_POINT_REF,
             )
         ),
-        closest_front_right_line=v.apply_line_detection(
+        closest_front_right_line=v.make_line_detection(
             front_cam_image,
-            detect_fn=v.detect_lanes,
+            detect_fn=v.detect_front_cam_lanes,
             reduce_fn=define_line_reducer_on_point(
                 point=v.FRONT_CAM_RIGHT_POINT_REF,
             ),

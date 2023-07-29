@@ -1,13 +1,12 @@
-# PARC Engineering League
-
-The University of Cape Verde - Smart Solutions Lab
+# Phase 1 of the Pan African Robotics Competition - Engineers League
+### Smart UniCV (The University of Cape Verde - Faculty of Sciences and Technologies - Reponsible Solutions Lab)
 
 ### Members
 - Sónia Semedo
 - Anaxímeno Brito
 - Kennedy Pina
 
-## Solutions
+## Description
 
 ### Task 1: Autonomous Field Navigation
 
