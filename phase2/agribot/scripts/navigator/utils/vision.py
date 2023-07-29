@@ -14,8 +14,8 @@ FRONT_MASK = cv2.imread('../images/front-mask02.png', 0)
 BRIGHTNESS_ALPHA_ADJUST = 1.5
 BRIGHTNESS_BETA_ADJUST = 10
 
-FRONT_CAM_LEFT_POINT_REF = np.array((150, 310))
-FRONT_CAM_RIGHT_POINT_REF = np.array((522, 310))
+FRONT_CAM_LEFT_POINT_REF = np.array((150, 360))
+FRONT_CAM_RIGHT_POINT_REF = np.array((522, 360))
 
 _BRIDGE_OBJ = CvBridge()
 
