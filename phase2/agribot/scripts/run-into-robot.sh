@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 
-echo -n "DEBUG mode is "
+echo -n "Running into the Robot: DEBUG mode is "
 if [[ $DEBUG -eq 1 ]]
 then
     echo "active!"
@@ -10,7 +10,7 @@ else
 fi
 
 
-## -- Running the Agent --
+## -- Running the Agent into the Robot --
 ROS_IP=$(hostname -I | tr -d [:blank:]) ROS_MASTER_URI=http://192.168.50.13:11311 python3 main.py
 
 

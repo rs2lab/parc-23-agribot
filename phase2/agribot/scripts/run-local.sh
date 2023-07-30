@@ -1,17 +1,11 @@
 #!/usr/bin/bash
 
 
-echo -n "DEBUG mode is "
-if [[ $DEBUG -eq 1 ]]
-then
-    echo "active!"
-else
-    echo "not active, to run the agent in DEBUG mode run it using 'DEBUG=1 ./run.sh'"
-fi
+echo "Running Local: DEBUG mode is active!"
 
 
-## -- Running the Agent --
-ROS_IP=$(hostname -I | tr -d [:blank:]) ROS_MASTER_URI=http://localhost:11311 python3 main.py
+## -- Running the Agent in local mode --
+DEBUG=1 ROS_IP=$(hostname -I | tr -d [:blank:]) ROS_MASTER_URI=http://localhost:11311 python3 main.py
 
 
 if [[ $? -ne 0 ]]
