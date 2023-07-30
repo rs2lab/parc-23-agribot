@@ -1,13 +1,14 @@
-import cv2
 import rospy
 import numpy as np
 
 from .utils import ruler as r
-from .utils import vision as v
 
 from .perceiver import AgribotPerceiver
 from .utils import SteppedAction, SingleStepStopAction, Action
-from .utils import ForgetfulMemory, BasicQueue
+from .utils import ForgetfulMemory, BasicQueue, RotationType
+
+
+HYPOTHETICAL_X_DIST = 126
 
 
 class AgribotPlanner:
@@ -15,6 +16,7 @@ class AgribotPlanner:
         self._percept = perception
         self._last_actions_memory = ForgetfulMemory()
         self._next_actions_queue = BasicQueue()
+        self._has_turned_first_row = False
 
     @property
     def _has_enqueued_actions(self) -> bool:
@@ -53,22 +55,54 @@ class AgribotPlanner:
         if (finish := self._finish_navigation(**kwargs)) is not None:
             return finish
         elif (turn := self._make_a_turn(**kwargs)) is not None:
+            self._percept.reset_cummulative_moves()
             return turn
         return self._move_forward(**kwargs)
 
     def _make_a_turn(self, **kwargs) -> Action:
+        # if self._percept.cum_lin_x > HYPOTHETICAL_X_DIST:
+        #     if not self._last_actions_memory.empty():
+        #         theta_dev = -np.mean(self._last_actions_memory.all())
+        #         rospy.logdebug(f'Applying theta dev recovery')
+        #         self.enqueue_action(SteppedAction(x=0, theta=theta_dev, steps=1))
+
+        #     direction = RotationType.CLOCKWISE if not self._has_turned_first_row else RotationType.ANTICLOCKWISE
+        #     turn_ind = direction.value
+        #     side = 'left' if direction == RotationType.ANTICLOCKWISE else 'right'
+        #     rospy.logdebug(f'Time to make a turn to the {side} side!')
+
+        #     self.enqueue_action(SingleStepStopAction())
+        #     self.enqueue_action(SteppedAction(x=0, theta=turn_ind * np.pi * 0.1, steps=18))
+        #     self.enqueue_action(SingleStepStopAction())
+        #     self.enqueue_action(SteppedAction(x=0.6, theta=0, steps=20))
+        #     self.enqueue_action(SingleStepStopAction())
+        #     self.enqueue_action(SteppedAction(x=0, theta=turn_ind * np.pi * 0.1, steps=18))
+        #     self.enqueue_action(SingleStepStopAction())
+        #     self.enqueue_action(SteppedAction(x=0.2, theta=0, steps=10))
+
+        #     self.enqueue_action(SingleStepStopAction(
+        #         on_finished=lambda: self._percept.reset_cummulative_moves()),
+        #     )
+
+        #     self._has_turned_first_row = True
+
+        #     return self._resolve_enqueued_action()
         return None # TODO
 
     def _move_forward(self, front_theta, **kwargs) -> Action:
-        theta = r.theta_weighted_sum(front_theta=front_theta)
-        alpha = r.alpha_theta(theta)
-        scale = 0.1 ** np.abs(front_theta)
+        last_theta_alpha = self._last_actions_memory.last()
+        last_theta = last_theta_alpha[0] if last_theta_alpha is not None else None
+        theta = r.theta_weighted_sum(front_theta=front_theta, last_theta=last_theta)
+        alpha = r.alpha_theta(theta, last_theta=last_theta)
+        scale = 0.1 ** np.abs(front_theta / 2)
+
+        self._last_actions_memory.add((theta, alpha))
 
         rospy.logdebug(f'theta = {theta}, alpha = {alpha}')
 
-        self.enqueue_action(SteppedAction(x=0.825 * scale, theta=theta * 0.1, steps=10))
+        self.enqueue_action(SteppedAction(x=0.65 * scale, theta=theta * 0.1, steps=10))
         self.enqueue_action(SingleStepStopAction())
-        self.enqueue_action(SteppedAction(x=0.175 * scale, theta=alpha * 0.1, steps=10))
+        self.enqueue_action(SteppedAction(x=0.2 * scale, theta=alpha * 0.1, steps=10))
         self.enqueue_action(SingleStepStopAction())
 
         return self._resolve_enqueued_action()

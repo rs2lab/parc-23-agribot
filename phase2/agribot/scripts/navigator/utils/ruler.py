@@ -92,7 +92,7 @@ def calculate_front_theta(front_cam_state, **kwargs) -> float:
         front_cam_image = v.adjust_image_brightness(front_cam_image)
         front_cam_image = v.mask_image(front_cam_image, v.FRONT_MASK)
 
-    front_plant_theta = front_shift_transfer_function(
+    front_lane_theta = front_shift_transfer_function(
         closest_front_left_line=v.make_line_detection(
             front_cam_image,
             detect_fn=v.detect_front_cam_lanes,
@@ -107,10 +107,33 @@ def calculate_front_theta(front_cam_state, **kwargs) -> float:
                 point=v.FRONT_CAM_RIGHT_POINT_REF,
             ),
         ),
-        hidden=1.5
+        hidden=2
     )
 
-    return front_plant_theta
+    front_plants_theta = front_shift_transfer_function(
+        closest_front_left_line=v.make_line_detection(
+            front_cam_image,
+            detect_fn=v.detect_front_cam_plants,
+            reduce_fn=define_line_reducer_on_point(
+                point=v.FRONT_CAM_LEFT_POINT_REF,
+            )
+        ),
+        closest_front_right_line=v.make_line_detection(
+            front_cam_image,
+            detect_fn=v.detect_front_cam_plants,
+            reduce_fn=define_line_reducer_on_point(
+                point=v.FRONT_CAM_RIGHT_POINT_REF
+            )
+        ),
+        hidden=2
+    )
+
+    front_theta = front_lane_theta + front_plants_theta
+
+    if front_lane_theta != 0 and front_plants_theta != 0:
+        front_theta = front_lane_theta * 0.6559 + front_plants_theta * 0.3441
+
+    return front_theta
 
 
 def theta_weighted_sum(*, front_theta, lateral_theta=0, lateral_weight = 0.65, front_weight = 0.35, last_theta=None):

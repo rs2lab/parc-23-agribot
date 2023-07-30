@@ -47,6 +47,7 @@ class AgribotPerceiver:
         self._cummulative_lin_x_move += twist.linear.x
         self._cummulative_lin_y_move += twist.linear.y
         self._cummulative_ang_z_rot += twist.angular.z
+        rospy.logdebug(f'Cummulative X = {self._cummulative_lin_x_move}')
 
     def reset_cummulative_moves(self) -> None:
         self._cummulative_lin_x_move = 0
