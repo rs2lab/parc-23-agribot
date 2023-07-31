@@ -6,7 +6,7 @@ if [[ $DEBUG -eq 1 ]]
 then
     echo "active!"
 else
-    echo "not active, to run the agent in DEBUG mode run it using 'DEBUG=1 ./run.sh'"
+    echo "not active, to run the agent in DEBUG mode run it using 'DEBUG=1 ./run-into-robot.sh'"
 fi
 
 
