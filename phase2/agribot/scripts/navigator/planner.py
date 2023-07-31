@@ -80,9 +80,7 @@ class AgribotPlanner:
         #     self.enqueue_action(SingleStepStopAction())
         #     self.enqueue_action(SteppedAction(x=0.2, theta=0, steps=10))
 
-        #     self.enqueue_action(SingleStepStopAction(
-        #         on_finished=lambda: self._percept.reset_cummulative_moves()),
-        #     )
+        #     self.enqueue_action(SingleStepStopAction(on_finished_cb=self._percept.reset_cummulative_moves))
 
         #     self._has_turned_first_row = True
 

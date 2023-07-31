@@ -5,7 +5,8 @@ from geometry_msgs.msg import Twist
 class Action:
     """Generic action class. This is an abstract class, hence, does not represent the
     concrete representation of the action to be taken by the robot."""
-    def __init__(self, x, theta, on_finished=None) -> None:
+    def __init__(self, x, theta, on_finished_cb=None) -> None:
+        self._on_finished_cb = on_finished_cb
         self._x = x
         self._theta = theta
 
@@ -40,13 +41,13 @@ class Action:
 
     def finish(self) -> None:
         """Finishes the execution of the action."""
-        if self.on_finished is not None:
-            self.on_finished()
+        if self._on_finished_cb is not None:
+            self._on_finished_cb()
 
 
 class TemporalAction(Action):
-    def __init__(self, x, theta, secs=0, on_finished=None) -> None:
-        super().__init__(x, theta, on_finished=on_finished)
+    def __init__(self, x, theta, secs=0, on_finished_cb=None) -> None:
+        super().__init__(x, theta, on_finished_cb=on_finished_cb)
         self._secs = secs
         self._start_time = None
         self._secs_spent = None
@@ -73,8 +74,8 @@ class TemporalAction(Action):
 
 
 class SteppedAction(Action):
-    def __init__(self, x, theta, steps=1, on_finished=None) -> None:
-        super().__init__(x, theta, on_finished=on_finished)
+    def __init__(self, x, theta, steps=1, on_finished_cb=None) -> None:
+        super().__init__(x, theta, on_finished_cb=on_finished_cb)
         self._steps = steps
         self._current_step = None
 
@@ -105,12 +106,12 @@ class EternalStoppingAction(Action):
     """This will make the vehicle stop forever while the program
     is running."""
     def __init__(self) -> None:
-        super().__init__(0, 0, on_finished=None)
+        super().__init__(0, 0, on_finished_cb=None)
 
     def has_next_step(self) -> bool:
         return True
 
 
 class SingleStepStopAction(SteppedAction):
-    def __init__(self, on_finished=None) -> None:
-        super().__init__(x=0, theta=0, steps=1, on_finished=on_finished)
+    def __init__(self, on_finished_cb=None) -> None:
+        super().__init__(x=0, theta=0, steps=1, on_finished_cb=on_finished_cb)
