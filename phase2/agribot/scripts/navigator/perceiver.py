@@ -130,7 +130,7 @@ class AgribotPerceiver:
         self._trigger_callbacks(SensorType.LEFT_CAM, data)
 
     def snapshot(self) -> dict:
-        """Returns a snapshpt of the perceived state of the environment in the specific instant
+        """Returns a snapshopt of the perceived state of the environment in the specific instant
         to guarantee consistence of the data when processing them together."""
         return {
             'front_cam_state': self.front_cam_state,
