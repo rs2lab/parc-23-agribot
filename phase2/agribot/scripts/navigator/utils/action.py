@@ -1,8 +1,9 @@
+from abc import ABC, abstractmethod
 from time import time
 from geometry_msgs.msg import Twist
 
 
-class Action:
+class Action(ABC):
     """Generic action class. This is an abstract class, hence, does not represent the
     concrete representation of the action to be taken by the robot."""
     def __init__(self, x, theta, on_finished_cb=None) -> None:
@@ -24,15 +25,14 @@ class Action:
         twist.angular.z = self.theta
         return twist
 
-    ## NOTE: Should be implemented downstream
     def init(self) -> None:
         """Initializes all variables needed to execute the action."""
         pass
-
-    ## NOTE: Should be implemented downstream
+    
+    @abstractmethod
     def has_next_step(self) -> bool:
         """Returns True if this action has a next step to be executed."""
-        return False
+        pass
 
     def consume_step(self, fn) -> None:
         """Consumes one step of the action. Receives a function `fn`
