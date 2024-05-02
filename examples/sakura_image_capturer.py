@@ -14,7 +14,7 @@ TOPIC='/front/zed_nodelet_front/rgb_raw/image_raw_color'
 try:
     TOPIC=os.getenv('TOPIC', TOPIC)
 except:
-    pass)
+    pass
 
 
 counter=0
